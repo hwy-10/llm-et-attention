@@ -4,7 +4,7 @@
 [![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![python](https://img.shields.io/badge/python-3.10%2B-blue.svg)](pyproject.toml)
 
-**최종 산출물은 FPGA 에 올릴 RTL 이다.** 
+**최종 산출물은 FPGA 에 올릴 RTL 이다.**  
 상위 비트 우선(MSB-first) 비트평면 계산 + 조기 종단(early termination)을 하드웨어로 구현하고, **이 기법이 실제로 이득이 되는
 조건의 경계**를 RTL 실측까지 포함해 정량화한다.
 
