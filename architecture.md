@@ -41,7 +41,7 @@ Decode 단계는 쓰기 1회, 읽기 N회로 메모리 접근이 병목이 된�
 
 어텐션 전체가 아니라 **1단계 점수 계산만** 다룬다.
 softmax 와 V 행렬 곱은 범위 밖이다(여유가 있으면 확장 과제).
-
+> 📘 Transformer와 Self-Attention의 기본 개념은 [Transformer 배경지식](docs/background/transformer.md)을 참고하세요.
 ### 1-2. Decode 단계 — 쓰기 1 : 읽기 N
 
 LLM 추론은 성격이 다른 두 단계로 나뉜다.
