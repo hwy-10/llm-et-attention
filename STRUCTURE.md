@@ -68,14 +68,15 @@ llm_et_attention/
 │
 ├── docs/
 │   └── background/              배경지식 문서
-│       └── transformer.md
+│       └── transformer.md       Transformer · Self-Attention · Prefill/Decode
 │
 ├── slides/                      ★ 그림은 "쓰는 문서" 기준으로 나눈다
 │   ├── README/                  README.md 용
 │   │   └── 00_overview.svg
 │   ├── architecture/            architecture.md 용
 │   │   ├── 00_overview.svg
-│   │   └── 05_finding.svg
+│   │   ├── 05_finding.svg
+│   │   └── bitplane_layout.svg  §1-4 비트평면 저장 방식
 │   ├── docs_background/         docs/background/*.md 용
 │   └── deck/                    발표용 16:9 슬라이드 6장
 │       └── 00_overview ~ 05_finding.svg
