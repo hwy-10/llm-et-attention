@@ -68,7 +68,8 @@ llm_et_attention/
 │
 ├── docs/
 │   └── background/              배경지식 문서
-│       └── transformer.md       Transformer · Self-Attention · Prefill/Decode
+│       ├── transformer.md       Transformer · Self-Attention · Prefill/Decode
+│       └── llama_3_2_1b.md      대상 모델 스펙·성능, KV 캐시 크기 계산
 │
 ├── slides/                      ★ 그림은 "쓰는 문서" 기준으로 나눈다
 │   ├── README/                  README.md 용
