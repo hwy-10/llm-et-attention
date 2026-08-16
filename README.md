@@ -1,17 +1,31 @@
-# LLM 어텐션 가속기 — 조기 종단 알고리즘 검증 툴킷
+# LLM 어텐션 가속기 — MSB-first 조기 종단 (FPGA RTL 프로젝트)
 
 [![tests](https://github.com/hwy-10/llm-et-attention/actions/workflows/tests.yml/badge.svg)](https://github.com/hwy-10/llm-et-attention/actions/workflows/tests.yml)
 [![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![python](https://img.shields.io/badge/python-3.10%2B-blue.svg)](pyproject.toml)
 
-상위 비트 우선(MSB-first) 비트평면 계산 + 조기 종단(early termination)을
-소프트웨어로 재현하고, **이 기법이 실제로 이득이 되는 조건의 경계**를 정량화한다.
+**최종 산출물은 FPGA 에 올릴 RTL 이다.** 상위 비트 우선(MSB-first) 비트평면 계산 +
+조기 종단(early termination)을 하드웨어로 구현하고, **이 기법이 실제로 이득이 되는
+조건의 경계**를 RTL 실측까지 포함해 정량화한다.
 
 ![프로젝트 전체 구성](slides/00_overview.svg)
 
-배경지식 가이드 8.3절의 **1단계 — 알고리즘 수준 검증**에 해당한다.
-2~4단계(RTL·합성·측정)와는 `config/hardware.yaml` 과 `rtl_data/` 로만 연결되므로,
-RTL 이 완성되기 전에도 이 저장소만으로 실험이 끝까지 진행된다.
+이 저장소의 파이썬 스택은 결과물이 아니라 **RTL 의 골든 레퍼런스**다.
+
+* **정답 기준** — 사이클 단위로 동작이 확정된 알고리즘 모델. RTL 출력이 맞는지 판정한다.
+* **설계 공간 탐색** — 워드폭·분할점 m0·margin·θ 정책을 RTL 을 짓기 *전에* 확정한다.
+  잘못 고르면 Verilog 를 다시 쓰는 비용이 든다.
+* **실측 대조** — Vivado 시뮬레이션·합성 결과를 받아 예측과 어긋나면 잡아낸다
+  (`--crosscheck`). 어긋나면 소프트웨어 모델이 틀린 것이다.
+
+즉 검증 범위는 알고리즘에서 끝나지 않고 **RTL 실측 대조까지** 이어진다.
+소프트웨어만으로 "이득이 있다"고 말하지 않는다 — 실제로 지금도 추정 Fmax 기준으로는
+손익분기 미달이며(아래 exp6), 그 결론은 Vivado 실측이 들어와야 확정된다.
+
+배경지식 가이드 8.3절 기준으로 이 저장소는 **1단계(알고리즘 검증)** 를 맡고,
+2~4단계(RTL·합성·측정)와는 `config/hardware.yaml` 과 `rtl_data/` **두 지점으로만**
+맞물린다. 덕분에 RTL 이 완성되기 전에도 실험이 끝까지 진행되고,
+RTL 이 나오면 같은 저장소에서 곧바로 대조된다.
 
 > **[architecture.md](architecture.md)** — 설계 전체 조감도 해설 (여기부터 읽으면 된다)
 > **[STRUCTURE.md](STRUCTURE.md)** — 파일 구조와 설계 원칙
