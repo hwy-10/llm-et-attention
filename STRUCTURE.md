@@ -140,7 +140,7 @@ llm_et_attention/
 
 가이드 5.3 / 5.4절에 대응한다. `config/quant.yaml` 이 이 규약을 고정한다.
 
-### K 는 반드시 unsigned 로 저장한다
+### K 는 unsigned 로 저장한다
 
 ```
 K_stored ∈ [0, 255],   실제값 ≈ (K_stored − z) · scale_k
@@ -154,9 +154,15 @@ R_m = (2^(8−m) − 1) · Q+          Q+ = q 원소 중 양수의 합
 L_m = S_m + (2^(8−m) − 1) · Q−    Q− = q 원소 중 음수의 합
 ```
 
-이 **정확한** 상하한이 된다. K 를 2의 보수(signed)로 저장하면 MSB 자리값이
-−128 이 되어 이 식이 깨지고 조기 종단이 무손실이 아니게 된다.
+이 **정확한** 상하한이 되고, 8개 평면 전부에 이 단일 공식이 그대로 적용된다.
 `tests/test_quantize.py::test_plane_weights_all_positive` 가 이를 지킨다.
+
+> **★ 정정 (2026-08)** — "signed 로 저장하면 상한식이 깨진다"는 이전 서술은 **틀렸다.**
+> MSB-first 라 부호 비트는 라운드 0에 확정되어 결정된 부분합에 들어가고,
+> 미확정 비트의 자리값은 전부 양수다. signed 에서도 유효한 bound 를 세울 수 있으며
+> PADE(HPCA 2026)·BitStopper 가 그렇게 한다. unsigned 는 **평면 0의 부호 특수처리와
+> 양방향 구간 로직을 없애는 회로 단순화**이지 수학적 필연이 아니다.
+> 자세한 것은 [related_work.md](related_work.md).
 
 ### per-channel 양자화와 "곱셈기 없음"을 동시에 지키는 법
 

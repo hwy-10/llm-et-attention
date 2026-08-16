@@ -26,9 +26,25 @@
 
 이 저장소는 이러한 전체 설계 흐름 중 알고리즘 수준 검증과 RTL 구현에 필요한 기준 데이터 생성을 담당하며, config/hardware.yaml과 rtl_data/를 통해 이후 RTL 설계·검증 과정과 연결된다.
 
-> **[architecture.md](architecture.md)** — 설계 전체 조감도 해설 (여기부터 읽으면 된다)  
-> **[STRUCTURE.md](STRUCTURE.md)** — 파일 구조와 설계 원칙  
-> **[slides/deck/](slides/deck/)** — 발표용 16:9 슬라이드 6장  
+---
+
+## 어디부터 읽을 것인가
+
+목적에 따라 진입점이 다르다. 순서대로 읽으면 앞 문서가 뒤 문서의 전제가 된다.
+
+| 목적 | 읽을 것 |
+|---|---|
+| **처음이라 배경이 없다면** | [docs/background/transformer.md](docs/background/transformer.md) → [architecture.md](architecture.md) §0~1 |
+| **대상 모델이 궁금하다면** | [docs/background/llama_3_2_1b.md](docs/background/llama_3_2_1b.md) — 스펙·성능·KV 캐시 크기 |
+| **설계를 이해하려면** | [architecture.md](architecture.md) §2~3 — **★ §2 양자화 규약이 나머지 전부의 전제다** |
+| **왜 이걸 하는지** | [related_work.md](related_work.md) §0 — PADE 가 이미 존재한다는 사실부터 |
+| **RTL 을 짜려면** | [config/hardware.yaml](config/hardware.yaml) + [rtl_data/schema.md](rtl_data/schema.md) |
+| **코드를 만지려면** | [STRUCTURE.md](STRUCTURE.md) → `python tests/run_tests.py` 부터 |
+| **발표 자료가 필요하면** | [slides/](slides/) — 16:9 슬라이드 6장 + 문서용 그림 |
+
+> ⚠ **아래 §"합성 데이터 기준 예시 결과"의 수치는 전부 합성 Q/K 기준이다.**
+> 경향을 보는 용도이고, 논문·발표에 쓸 값은 실제 텐서 캡처로 다시 뽑아야 한다.
+
 ---
 
 ## 빠른 시작
@@ -211,9 +227,25 @@ pytest -q                            # pytest 가 있으면 이쪽도 가능
 
 ## 참고
 
-배경지식 가이드 10장의 문헌 중 이 저장소가 직접 반영한 것:
+> 전체 조사는 **[related_work.md](related_work.md)** 에 있다.
+> 22개 primary source, 3표 적대적 검증(14건 확정 / 11건 기각) 기준이다.
+> **논문을 쓰기 전에 반드시 읽을 것** — 아래 세 가지가 거기서 나왔다.
 
-* **[1] LeOPArd** (ISCA 2022) — 비트 단위 조기 종단 구조
-* **[2] SpAtten** (HPCA 2021) — 상위 비트 우선 읽기, top-k 선택 하드웨어
-* **[4] BitStopper** (2025) — 제어 회로 오버헤드 6.9% (`utils/cost_model.py` 비교 기준)
-* **[11] KIVI** (2024) — K 는 채널 단위 비대칭 양자화 (`config/quant.yaml`)
+이 저장소가 직접 반영한 문헌:
+
+| | 반영 위치 |
+|---|---|
+| **[1] LeOPArd** (ISCA 2022) — 비트 단위 조기 종단 | 설계 원형 |
+| **[2] SpAtten** (HPCA 2021) — MSB 우선 읽기, top-k 하드웨어 | 설계 원형 |
+| **[4] BitStopper** (arXiv:2512.06457, **preprint**) — 제어 회로 오버헤드 | `utils/cost_model.py` |
+| **[11] KIVI** (ICML 2024) — K 는 채널 단위 비대칭 양자화 | `config/quant.yaml` |
+
+**★ 2026-08 조사에서 나온 정정 세 가지 ★**
+
+1. **[1]·[2]는 더 이상 SOTA 가 아니다.** Tsinghua 그룹이 BETA(TCAS-II 2025) →
+   MCBP(MICRO 2025) → BitStopper → **PADE(HPCA 2026)** 로 6개월 주기 자기계승 중이고,
+   **PADE 가 이 프로젝트의 핵심 메커니즘을 거의 그대로 구현했다**(단, ASIC. FPGA 평가 없음).
+   남는 차별점은 FPGA/DSP-free · BRAM 워드폭 · INT8 unsigned 데이터패스다.
+2. **[4]의 "6.9%"는 area 가 아니라 power** 이고, 블록 두 그룹을 합치면 약 10~12% 다.
+3. **"signed 면 상한식이 깨진다"는 전제는 반증되었다.** unsigned 는 수학적 필연이 아니라
+   회로 단순화다. `config/quant.yaml` 과 [architecture.md §2](architecture.md) 의 정정 참조.
