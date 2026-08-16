@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720"
+     font-family="Malgun Gothic, Segoe UI, sans-serif">
+  <rect width="1280" height="720" fill="#ffffff"/>
+
+  <text x="80" y="92" font-size="42" font-weight="700" fill="#16181d">하드웨어 구성</text>
+  <text x="80" y="132" font-size="22" fill="#565e6b">종단 신호가 연산뿐 아니라 <tspan font-weight="700" fill="#c8392b">메모리 읽기 요청 자체</tspan>를 차단한다</text>
+  <line x1="80" y1="162" x2="1200" y2="162" stroke="#d4dae3" stroke-width="1.5"/>
+
+  <!-- 1 BRAM -->
+  <rect x="150" y="230" width="230" height="96" rx="8" fill="#fbe6e3" stroke="#c8392b" stroke-width="2"/>
+  <text x="265" y="272" font-size="24" font-weight="700" fill="#16181d" text-anchor="middle">비트평면 BRAM</text>
+  <text x="265" y="300" font-size="17" fill="#565e6b" text-anchor="middle">평면 단위 읽기</text>
+
+  <path d="M380 278 H 436" stroke="#565e6b" stroke-width="2.5" fill="none"/>
+  <polygon points="450,278 435,271 435,285" fill="#565e6b"/>
+
+  <!-- 2 masked sum -->
+  <rect x="450" y="230" width="230" height="96" rx="8" fill="#f4f6fa" stroke="#98a0ac" stroke-width="2"/>
+  <text x="565" y="272" font-size="24" font-weight="700" fill="#16181d" text-anchor="middle">부분 내적</text>
+  <text x="565" y="300" font-size="17" fill="#565e6b" text-anchor="middle">조건부 덧셈 · 곱셈기 없음</text>
+
+  <path d="M680 278 H 736" stroke="#565e6b" stroke-width="2.5" fill="none"/>
+  <polygon points="750,278 735,271 735,285" fill="#565e6b"/>
+
+  <!-- 3 accumulate -->
+  <rect x="750" y="230" width="230" height="96" rx="8" fill="#f4f6fa" stroke="#98a0ac" stroke-width="2"/>
+  <text x="865" y="272" font-size="24" font-weight="700" fill="#16181d" text-anchor="middle">시프트 누산</text>
+  <text x="865" y="300" font-size="17" fill="#565e6b" text-anchor="middle">S += 2^b × 부분 내적</text>
+
+  <path d="M865 326 V 384" stroke="#565e6b" stroke-width="2.5" fill="none"/>
+  <polygon points="865,398 858,383 872,383" fill="#565e6b"/>
+
+  <!-- 4 terminator -->
+  <rect x="750" y="398" width="230" height="96" rx="8" fill="#dfeafa" stroke="#1b6ed0" stroke-width="2.4"/>
+  <text x="865" y="440" font-size="24" font-weight="700" fill="#16181d" text-anchor="middle">종단 판정</text>
+  <text x="865" y="468" font-size="17" fill="#565e6b" text-anchor="middle">상한 &lt; θ 이면 중단</text>
+
+  <path d="M750 446 H 696" stroke="#1b6ed0" stroke-width="2.5" fill="none"/>
+  <polygon points="682,446 697,439 697,453" fill="#1b6ed0"/>
+
+  <!-- 5 threshold -->
+  <rect x="450" y="398" width="230" height="96" rx="8" fill="#f4f6fa" stroke="#98a0ac" stroke-width="2"/>
+  <text x="565" y="440" font-size="24" font-weight="700" fill="#16181d" text-anchor="middle">기준값 관리부</text>
+  <text x="565" y="468" font-size="17" fill="#565e6b" text-anchor="middle">θ = 상위 k번째</text>
+
+  <!-- kill signal -->
+  <path d="M450 446 H 396 V 300 H 396" stroke="#c8392b" stroke-width="3" fill="none"/>
+  <path d="M396 300 H 394" stroke="#c8392b" stroke-width="3" fill="none"/>
+  <polygon points="380,300 395,293 395,307" fill="#c8392b"/>
+  <text x="150" y="404" font-size="21" font-weight="700" fill="#c8392b">읽기 요청 차단</text>
+  <text x="150" y="430" font-size="17" fill="#c8392b">중단된 토큰은</text>
+  <text x="150" y="452" font-size="17" fill="#c8392b">다음 평면을 안 읽는다</text>
+
+  <!-- side : bounds -->
+  <rect x="1010" y="230" width="190" height="96" rx="8" fill="#f8eeda" stroke="#a5620c" stroke-width="2"/>
+  <text x="1105" y="266" font-size="21" font-weight="700" fill="#16181d" text-anchor="middle">Q+ / Q-</text>
+  <text x="1105" y="292" font-size="16" fill="#565e6b" text-anchor="middle">스텝당 1회 계산</text>
+  <text x="1105" y="312" font-size="16" fill="#565e6b" text-anchor="middle">→ 잔여 상·하한</text>
+  <path d="M1105 326 V 446 H 998" stroke="#a5620c" stroke-width="2.5" fill="none"/>
+  <polygon points="984,446 999,439 999,453" fill="#a5620c"/>
+
+  <!-- takeaway -->
+  <rect x="80" y="590" width="1120" height="62" rx="6" fill="#f4f6fa" stroke="#d4dae3" stroke-width="1.6"/>
+  <text x="108" y="618" font-size="21" font-weight="700" fill="#16181d">곱셈기(DSP)를 쓰지 않는다 — 가산 트리와 제어 논리(LUT)로 교환한다</text>
+  <text x="108" y="642" font-size="18" fill="#565e6b">이 교환이 FPGA에서 유리한지가 본 과제의 검증 대상</text>
+</svg>

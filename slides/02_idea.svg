@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720"
+     font-family="Malgun Gothic, Segoe UI, sans-serif">
+  <defs>
+    <marker id="s2arrow" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#565e6b"/>
+    </marker>
+  </defs>
+
+  <rect width="1280" height="720" fill="#ffffff"/>
+
+  <text x="80" y="92" font-size="42" font-weight="700" fill="#16181d">상위 비트부터 계산하고, 확정되면 멈춘다</text>
+  <text x="80" y="132" font-size="22" fill="#565e6b">평면을 하나씩 처리할수록 점수의 가능 범위가 좁아진다. 범위 전체가 기준값 아래로 내려가면 끝이다.</text>
+  <line x1="80" y1="162" x2="1200" y2="162" stroke="#d4dae3" stroke-width="1.5"/>
+
+  <!-- theta line -->
+  <line x1="880" y1="210" x2="880" y2="520" stroke="#c8392b" stroke-width="2.5" stroke-dasharray="8 6"/>
+  <text x="880" y="200" font-size="24" font-weight="700" fill="#c8392b" text-anchor="middle">θ</text>
+  <text x="898" y="540" font-size="17" fill="#c8392b">상위 k번째 기준값</text>
+
+  <!-- m = 2 -->
+  <text x="80"  y="264" font-size="21" font-weight="700" fill="#16181d">평면 2개 처리</text>
+  <path d="M300 256 V 272 M300 264 H 1090 M1090 256 V 272" stroke="#565e6b" stroke-width="2.5" fill="none"/>
+  <circle cx="640" cy="264" r="7" fill="#565e6b"/>
+  <text x="1110" y="271" font-size="18" fill="#565e6b">범위가 넓다 → 계속</text>
+
+  <!-- m = 3 -->
+  <text x="80"  y="354" font-size="21" font-weight="700" fill="#16181d">평면 3개 처리</text>
+  <path d="M420 346 V 362 M420 354 H 960 M960 346 V 362" stroke="#565e6b" stroke-width="2.5" fill="none"/>
+  <circle cx="690" cy="354" r="7" fill="#565e6b"/>
+  <text x="1110" y="361" font-size="18" fill="#565e6b">아직 θ 를 넘을 수 있다</text>
+
+  <!-- m = 4 : terminate -->
+  <text x="80"  y="444" font-size="21" font-weight="700" fill="#c8392b">평면 4개 처리</text>
+  <path d="M520 436 V 452 M520 444 H 800 M800 436 V 452" stroke="#c8392b" stroke-width="3" fill="none"/>
+  <circle cx="660" cy="444" r="7" fill="#c8392b"/>
+  <text x="1110" y="451" font-size="19" font-weight="700" fill="#c8392b">상한이 θ 아래 → 중단</text>
+
+  <text x="300" y="500" font-size="17" fill="#98a0ac">하한 L</text>
+  <text x="1090" y="500" font-size="17" fill="#98a0ac" text-anchor="end">상한 U = S + R</text>
+
+  <!-- bit plane strip -->
+  <text x="80" y="600" font-size="21" font-weight="700" fill="#16181d">비트평면</text>
+  <rect x="300" y="576" width="88" height="42" rx="4" fill="#dfeafa" stroke="#1b6ed0" stroke-width="1.6"/>
+  <text x="344" y="604" font-size="20" fill="#16181d" text-anchor="middle">b7</text>
+  <rect x="396" y="576" width="88" height="42" rx="4" fill="#dfeafa" stroke="#1b6ed0" stroke-width="1.6"/>
+  <text x="440" y="604" font-size="20" fill="#16181d" text-anchor="middle">b6</text>
+  <rect x="492" y="576" width="88" height="42" rx="4" fill="#dfeafa" stroke="#1b6ed0" stroke-width="1.6"/>
+  <text x="536" y="604" font-size="20" fill="#16181d" text-anchor="middle">b5</text>
+  <rect x="588" y="576" width="88" height="42" rx="4" fill="#dfeafa" stroke="#1b6ed0" stroke-width="1.6"/>
+  <text x="632" y="604" font-size="20" fill="#16181d" text-anchor="middle">b4</text>
+
+  <rect x="684" y="576" width="88" height="42" rx="4" fill="none" stroke="#d4dae3" stroke-width="1.6" stroke-dasharray="6 5"/>
+  <text x="728" y="604" font-size="20" fill="#98a0ac" text-anchor="middle">b3</text>
+  <rect x="780" y="576" width="88" height="42" rx="4" fill="none" stroke="#d4dae3" stroke-width="1.6" stroke-dasharray="6 5"/>
+  <text x="824" y="604" font-size="20" fill="#98a0ac" text-anchor="middle">b2</text>
+  <rect x="876" y="576" width="88" height="42" rx="4" fill="none" stroke="#d4dae3" stroke-width="1.6" stroke-dasharray="6 5"/>
+  <text x="920" y="604" font-size="20" fill="#98a0ac" text-anchor="middle">b1</text>
+  <rect x="972" y="576" width="88" height="42" rx="4" fill="none" stroke="#d4dae3" stroke-width="1.6" stroke-dasharray="6 5"/>
+  <text x="1016" y="604" font-size="20" fill="#98a0ac" text-anchor="middle">b0</text>
+
+  <path d="M684 646 H 1060" stroke="#c8392b" stroke-width="2.5" fill="none"/>
+  <text x="872" y="676" font-size="21" font-weight="700" fill="#c8392b" text-anchor="middle">읽지도 계산하지도 않는다</text>
+</svg>

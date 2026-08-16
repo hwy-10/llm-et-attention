@@ -1,0 +1,61 @@
+name: tests
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      # 코어는 numpy 하나만 필요하다는 주장을 CI 가 매번 검증한다.
+      # PyYAML / pytest / matplotlib 없이 돌아야 정상이다.
+      - name: Install core dependency only
+        run: python -m pip install --upgrade pip numpy
+
+      - name: Run test suite (내장 러너 — pytest 없이)
+        run: python tests/run_tests.py
+
+      - name: Smoke run — 종단이 실제로 일어나는지
+        run: python run_paper_experiments.py --only exp1 --quick --no-figures
+
+      - name: Crosscheck — SW 예측 vs mock 실측
+        run: python run_paper_experiments.py --generate-mock && python run_paper_experiments.py --crosscheck
+
+  # 선택 의존성을 모두 깔았을 때도 깨지지 않는지 (PyYAML 경로, pytest 경로, 그림 생성)
+  test-full:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install all optional dependencies
+        run: python -m pip install --upgrade pip numpy matplotlib pandas PyYAML pytest
+
+      - name: Run test suite (pytest 경로)
+        run: pytest -q
+
+      - name: Full experiment sweep + figures
+        run: python run_paper_experiments.py --quick
+
+      - name: Upload outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: experiment-outputs
+          path: outputs/
+          retention-days: 14

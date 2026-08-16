@@ -1,0 +1,34 @@
+# ===========================================================================
+# 양자화 규약  — 배경지식 가이드 5.3절
+#
+# ★★ 이 파일의 규약이 5.4절 상한식의 전제다. 함부로 바꾸면 안 된다. ★★
+#
+#   K : 비대칭(asymmetric) unsigned 8비트.  K_stored ∈ [0, 255]
+#       실제값 ≈ (K_stored - zero_point) * scale_k
+#       -> 비트 자리값이 전부 양수(2^b)이므로
+#          R_m = (2^(8-m) - 1) * Q+  가 정확한 상한이 된다.
+#       signed(2의 보수)로 저장하면 MSB 자리값이 음수가 되어 이 식이 깨진다.
+#
+#   q : 대칭(symmetric) signed 8비트.  q ∈ [-127, 127]
+#       Q+ = q 중 양수의 합,  Q- = q 중 음수의 합
+#
+#   zero-point 보정항 = -zero_point * sum(q)  ->  모든 토큰에 동일한 상수.
+#       * 순위(top-k)에는 영향이 없다  -> 종단 판정에서는 무시 가능
+#       * 최종 점수값에는 필요하다     -> accumulator.py 에서 한 번 더한다
+# ===========================================================================
+
+key:
+  bits: 8
+  scheme: "asymmetric_unsigned"
+  granularity: "per_channel"   # KIVI[11]: K는 채널(=차원) 단위 양자화가 유리
+  clip_percentile: 100.0       # 100 = min/max 그대로. 낮추면 이상치 클리핑.
+
+query:
+  bits: 8
+  scheme: "symmetric_signed"
+  granularity: "per_token"
+
+# 비트평면 처리 순서 — MSB 우선 (가이드 4.2절)
+planes:
+  order: "msb_first"
+  n_planes: 8

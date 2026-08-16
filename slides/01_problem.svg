@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720"
+     font-family="Malgun Gothic, Segoe UI, sans-serif">
+  <rect width="1280" height="720" fill="#ffffff"/>
+
+  <!-- title -->
+  <text x="80" y="92" font-size="42" font-weight="700" fill="#16181d">한 번 쓰고, N번 읽는다</text>
+  <text x="80" y="132" font-size="22" fill="#565e6b">그런데 읽어온 것의 대부분은 최종 출력에 거의 기여하지 않는다</text>
+  <line x1="80" y1="162" x2="1200" y2="162" stroke="#d4dae3" stroke-width="1.5"/>
+
+  <!-- ── panel A : KV cache ── -->
+  <text x="80" y="212" font-size="22" font-weight="700" fill="#16181d">KV 캐시</text>
+  <text x="80" y="240" font-size="17" fill="#565e6b">매 스텝 전부 읽는다</text>
+  <rect x="80" y="256" width="280" height="322" rx="8" fill="#f4f6fa" stroke="#d4dae3" stroke-width="1.5"/>
+  <rect x="100" y="276" width="240" height="18" rx="4" fill="#dfeafa" stroke="#1b6ed0" stroke-width="1.4"/>
+  <rect x="100" y="300" width="240" height="18" rx="4" fill="#dfeafa" stroke="#1b6ed0" stroke-width="1.4"/>
+  <rect x="100" y="324" width="240" height="18" rx="4" fill="#dfeafa" stroke="#1b6ed0" stroke-width="1.4"/>
+  <rect x="100" y="348" width="240" height="18" rx="4" fill="#dfeafa" stroke="#1b6ed0" stroke-width="1.4"/>
+  <rect x="100" y="372" width="240" height="18" rx="4" fill="#dfeafa" stroke="#1b6ed0" stroke-width="1.4"/>
+  <rect x="100" y="396" width="240" height="18" rx="4" fill="#dfeafa" stroke="#1b6ed0" stroke-width="1.4"/>
+  <rect x="100" y="420" width="240" height="18" rx="4" fill="#dfeafa" stroke="#1b6ed0" stroke-width="1.4"/>
+  <rect x="100" y="444" width="240" height="18" rx="4" fill="#dfeafa" stroke="#1b6ed0" stroke-width="1.4"/>
+  <rect x="100" y="468" width="240" height="18" rx="4" fill="#dfeafa" stroke="#1b6ed0" stroke-width="1.4"/>
+  <rect x="100" y="492" width="240" height="18" rx="4" fill="#dfeafa" stroke="#1b6ed0" stroke-width="1.4"/>
+  <rect x="100" y="516" width="240" height="18" rx="4" fill="#dfeafa" stroke="#1b6ed0" stroke-width="1.4"/>
+  <rect x="100" y="540" width="240" height="18" rx="4" fill="#dfeafa" stroke="#1b6ed0" stroke-width="1.4"/>
+
+  <path d="M372 420 H 416" stroke="#565e6b" stroke-width="2.5" fill="none"/>
+  <polygon points="430,420 415,413 415,427" fill="#565e6b"/>
+  <text x="400" y="404" font-size="17" fill="#565e6b" text-anchor="middle">Q·K^T</text>
+
+  <!-- ── panel B : raw scores ── -->
+  <text x="440" y="212" font-size="22" font-weight="700" fill="#16181d">어텐션 점수</text>
+  <text x="440" y="240" font-size="17" fill="#565e6b">값의 차이는 크지 않다</text>
+  <line x1="440" y1="578" x2="720" y2="578" stroke="#98a0ac" stroke-width="1.5"/>
+  <rect x="452" y="508" width="16" height="70"  fill="#c9d3e0"/>
+  <rect x="476" y="533" width="16" height="45"  fill="#c9d3e0"/>
+  <rect x="500" y="428" width="16" height="150" fill="#c9d3e0"/>
+  <rect x="524" y="518" width="16" height="60"  fill="#c9d3e0"/>
+  <rect x="548" y="540" width="16" height="38"  fill="#c9d3e0"/>
+  <rect x="572" y="388" width="16" height="190" fill="#c9d3e0"/>
+  <rect x="596" y="526" width="16" height="52"  fill="#c9d3e0"/>
+  <rect x="620" y="512" width="16" height="66"  fill="#c9d3e0"/>
+  <rect x="644" y="536" width="16" height="42"  fill="#c9d3e0"/>
+  <rect x="668" y="458" width="16" height="120" fill="#c9d3e0"/>
+  <rect x="692" y="530" width="16" height="48"  fill="#c9d3e0"/>
+  <rect x="716" y="520" width="16" height="58"  fill="#c9d3e0"/>
+
+  <path d="M748 420 H 792" stroke="#565e6b" stroke-width="2.5" fill="none"/>
+  <polygon points="806,420 791,413 791,427" fill="#565e6b"/>
+  <text x="776" y="404" font-size="17" fill="#565e6b" text-anchor="middle">softmax</text>
+
+  <!-- ── panel C : after softmax ── -->
+  <text x="816" y="212" font-size="22" font-weight="700" fill="#16181d">실제 기여도</text>
+  <text x="816" y="240" font-size="17" fill="#c8392b" font-weight="700">2개가 사실상 전부</text>
+  <line x1="816" y1="578" x2="1096" y2="578" stroke="#98a0ac" stroke-width="1.5"/>
+  <rect x="828"  y="574" width="16" height="4"   fill="#c9d3e0"/>
+  <rect x="852"  y="575" width="16" height="3"   fill="#c9d3e0"/>
+  <rect x="876"  y="418" width="16" height="160" fill="#c8392b"/>
+  <rect x="900"  y="574" width="16" height="4"   fill="#c9d3e0"/>
+  <rect x="924"  y="575" width="16" height="3"   fill="#c9d3e0"/>
+  <rect x="948"  y="298" width="16" height="280" fill="#c8392b"/>
+  <rect x="972"  y="574" width="16" height="4"   fill="#c9d3e0"/>
+  <rect x="996"  y="573" width="16" height="5"   fill="#c9d3e0"/>
+  <rect x="1020" y="575" width="16" height="3"   fill="#c9d3e0"/>
+  <rect x="1044" y="556" width="16" height="22"  fill="#c9d3e0"/>
+  <rect x="1068" y="574" width="16" height="4"   fill="#c9d3e0"/>
+  <rect x="1092" y="575" width="16" height="3"   fill="#c9d3e0"/>
+
+  <path d="M1130 300 H 1180 V 578 H 1130" stroke="#c8392b" stroke-width="2" fill="none"/>
+  <text x="1196" y="432" font-size="17" fill="#c8392b" font-weight="700">나머지</text>
+  <text x="1196" y="456" font-size="17" fill="#c8392b" font-weight="700">1% 미만</text>
+
+  <!-- takeaway -->
+  <rect x="80" y="622" width="1120" height="58" rx="6" fill="#fbe6e3" stroke="#c8392b" stroke-width="1.6"/>
+  <text x="108" y="659" font-size="23" font-weight="700" fill="#16181d">버려질 데이터를 끝까지 읽고 계산하는 것 — 이것이 낭비의 본질이다</text>
+</svg>
