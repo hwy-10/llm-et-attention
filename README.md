@@ -1,6 +1,6 @@
 # LLM 어텐션 가속기 — 조기 종단 알고리즘 검증 툴킷
 
-
+[![tests](https://github.com/hwy-10/llm-et-attention/actions/workflows/tests.yml/badge.svg)](https://github.com/hwy-10/llm-et-attention/actions/workflows/tests.yml)
 [![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![python](https://img.shields.io/badge/python-3.10%2B-blue.svg)](pyproject.toml)
 
