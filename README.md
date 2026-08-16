@@ -26,12 +26,9 @@
 
 이 저장소는 이러한 전체 설계 흐름 중 알고리즘 수준 검증과 RTL 구현에 필요한 기준 데이터 생성을 담당하며, config/hardware.yaml과 rtl_data/를 통해 이후 RTL 설계·검증 과정과 연결된다.
 
-> **[architecture.md](architecture.md)** — 설계 전체 조감도 해설 (여기부터 읽으면 된다)
-
-> **[STRUCTURE.md](STRUCTURE.md)** — 파일 구조와 설계 원칙
-
-> **[slides/](slides/)** — 발표용 16:9 슬라이드 6장
-
+> **[architecture.md](architecture.md)** — 설계 전체 조감도 해설 (여기부터 읽으면 된다)  
+> **[STRUCTURE.md](STRUCTURE.md)** — 파일 구조와 설계 원칙  
+> **[slides/](slides/)** — 발표용 16:9 슬라이드 6장  
 ---
 
 ## 빠른 시작
