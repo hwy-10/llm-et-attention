@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640" width="1280" height="640"
+     font-family="Malgun Gothic, Segoe UI, sans-serif">
+  <rect width="1280" height="640" fill="#ffffff"/>
+
+  <text x="60" y="42" font-size="20" font-weight="700" fill="#16181d">평면을 하나씩 처리할수록 점수의 가능 범위가 좁아진다</text>
+  <text x="60" y="70" font-size="16" fill="#565e6b">막대 = [하한 L_m , 상한 U_m]. 범위 전체가 θ 아래로 내려가면 그 토큰은 더 볼 필요가 없다.</text>
+
+  <!-- 축 -->
+  <line x1="140" y1="510" x2="1180" y2="510" stroke="#16181d" stroke-width="1.8"/>
+  <line x1="140" y1="110" x2="140" y2="510" stroke="#16181d" stroke-width="1.8"/>
+
+  <line x1="140" y1="450" x2="1180" y2="450" stroke="#eef1f5" stroke-width="1"/>
+  <line x1="140" y1="350" x2="1180" y2="350" stroke="#eef1f5" stroke-width="1"/>
+  <line x1="140" y1="250" x2="1180" y2="250" stroke="#eef1f5" stroke-width="1"/>
+  <line x1="140" y1="150" x2="1180" y2="150" stroke="#eef1f5" stroke-width="1"/>
+  <text x="128" y="455" font-size="14" fill="#8a93a3" text-anchor="end">0</text>
+  <text x="128" y="355" font-size="14" fill="#8a93a3" text-anchor="end">1000</text>
+  <text x="128" y="255" font-size="14" fill="#8a93a3" text-anchor="end">2000</text>
+  <text x="128" y="155" font-size="14" fill="#8a93a3" text-anchor="end">3000</text>
+  <text x="70" y="100" font-size="14" fill="#8a93a3">점수</text>
+
+  <text x="205" y="535" font-size="15" fill="#565e6b" text-anchor="middle">b7</text>
+  <text x="335" y="535" font-size="15" fill="#565e6b" text-anchor="middle">b6</text>
+  <text x="465" y="535" font-size="15" fill="#565e6b" text-anchor="middle">b5</text>
+  <text x="595" y="535" font-size="15" fill="#565e6b" text-anchor="middle">b4</text>
+  <text x="725" y="535" font-size="15" fill="#565e6b" text-anchor="middle">b3</text>
+  <text x="855" y="535" font-size="15" fill="#565e6b" text-anchor="middle">b2</text>
+  <text x="985" y="535" font-size="15" fill="#565e6b" text-anchor="middle">b1</text>
+  <text x="1115" y="535" font-size="15" fill="#565e6b" text-anchor="middle">b0</text>
+  <text x="660" y="562" font-size="15" fill="#8a93a3" text-anchor="middle">처리한 비트평면 (MSB → LSB)</text>
+
+  <!-- 참값 기준선 -->
+  <line x1="140" y1="180" x2="1180" y2="180" stroke="#1b6ed0" stroke-width="1.2" stroke-dasharray="3 4"/>
+  <text x="1188" y="185" font-size="14" fill="#1b6ed0">참값 2696</text>
+  <line x1="140" y1="413" x2="360" y2="413" stroke="#c8392b" stroke-width="1.2" stroke-dasharray="3 4"/>
+  <text x="368" y="418" font-size="14" fill="#c8392b">참값 368</text>
+
+  <!-- 토큰 2 (생존) -->
+  <rect x="181" y="118" width="22" height="216" rx="3" fill="#dfeafa" stroke="#1b6ed0" stroke-width="2"/>
+  <rect x="311" y="118" width="22" height="107" rx="3" fill="#dfeafa" stroke="#1b6ed0" stroke-width="2"/>
+  <rect x="441" y="147" width="22" height="53" rx="3" fill="#dfeafa" stroke="#1b6ed0" stroke-width="2"/>
+  <rect x="571" y="163" width="22" height="26" rx="3" fill="#dfeafa" stroke="#1b6ed0" stroke-width="2"/>
+  <rect x="701" y="170" width="22" height="13" rx="3" fill="#dfeafa" stroke="#1b6ed0" stroke-width="2"/>
+  <rect x="831" y="176" width="22" height="6" rx="2" fill="#dfeafa" stroke="#1b6ed0" stroke-width="2"/>
+  <rect x="961" y="179" width="22" height="3" rx="1" fill="#1b6ed0" stroke="#1b6ed0" stroke-width="2"/>
+  <rect x="1091" y="179" width="22" height="3" rx="1" fill="#1b6ed0" stroke="#1b6ed0" stroke-width="2"/>
+
+  <!-- 토큰 3 (종단) -->
+  <rect x="207" y="285" width="22" height="216" rx="3" fill="#f7d9d5" stroke="#c8392b" stroke-width="2"/>
+  <rect x="337" y="362" width="22" height="107" rx="3" fill="#f7d9d5" stroke="#c8392b" stroke-width="2"/>
+
+  <!-- 종단 표시 -->
+  <line x1="368" y1="352" x2="392" y2="376" stroke="#c8392b" stroke-width="3.5"/>
+  <line x1="392" y1="352" x2="368" y2="376" stroke="#c8392b" stroke-width="3.5"/>
+  <text x="404" y="370" font-size="17" font-weight="700" fill="#c8392b">여기서 종단</text>
+  <text x="404" y="392" font-size="15" fill="#565e6b">상한 882 &lt; θ 1667 — 남은 6장은 읽지 않는다</text>
+
+  <!-- θ 계단 -->
+  <line x1="141" y1="334" x2="270" y2="334" stroke="#16181d" stroke-width="2.5" stroke-dasharray="7 4"/>
+  <line x1="270" y1="334" x2="270" y2="283" stroke="#16181d" stroke-width="2.5" stroke-dasharray="7 4"/>
+  <line x1="270" y1="283" x2="1180" y2="283" stroke="#16181d" stroke-width="2.5" stroke-dasharray="7 4"/>
+  <text x="1188" y="288" font-size="15" font-weight="700" fill="#16181d">θ</text>
+  <text x="148" y="326" font-size="14" fill="#565e6b">θ=1155</text>
+  <text x="278" y="275" font-size="14" fill="#565e6b">θ=1667</text>
+
+  <!-- 범례 -->
+  <rect x="140" y="586" width="26" height="26" rx="4" fill="#dfeafa" stroke="#1b6ed0" stroke-width="2"/>
+  <text x="176" y="605" font-size="15" fill="#565e6b">토큰 2 — 끝까지 살아남아 참값 2696 으로 수렴</text>
+  <rect x="620" y="586" width="26" height="26" rx="4" fill="#f7d9d5" stroke="#c8392b" stroke-width="2"/>
+  <text x="656" y="605" font-size="15" fill="#565e6b">토큰 3 — 평면 2 장만에 탈락. 참값 368 은 끝내 계산하지 않는다</text>
+</svg>

@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 400" width="1280" height="400"
+     font-family="Malgun Gothic, Segoe UI, sans-serif">
+  <rect width="1280" height="400" fill="#ffffff"/>
+
+  <!-- ① 점수 -->
+  <rect x="60" y="60" width="240" height="120" rx="10" fill="#dfeafa" stroke="#1b6ed0" stroke-width="3"/>
+  <text x="180" y="96" font-size="20" font-weight="700" fill="#1b6ed0" text-anchor="middle">① 점수</text>
+  <text x="180" y="128" font-size="19" fill="#16181d" text-anchor="middle">S = Q · K^T / sqrt(d)</text>
+  <text x="180" y="158" font-size="15" fill="#565e6b" text-anchor="middle">토큰마다 정수 하나</text>
+  <text x="180" y="204" font-size="17" font-weight="700" fill="#1b6ed0" text-anchor="middle">★ 이 프로젝트</text>
+
+  <line x1="300" y1="120" x2="352" y2="120" stroke="#565e6b" stroke-width="2.5"/>
+  <polygon points="352,120 338,113 338,127" fill="#565e6b"/>
+
+  <!-- ② 마스킹 -->
+  <rect x="356" y="60" width="200" height="120" rx="10" fill="#f7f9fc" stroke="#d4dae3" stroke-width="2"/>
+  <text x="456" y="96" font-size="20" font-weight="700" fill="#8a93a3" text-anchor="middle">② 마스킹</text>
+  <text x="456" y="128" font-size="17" fill="#565e6b" text-anchor="middle">미래 토큰 가림</text>
+  <text x="456" y="152" font-size="15" fill="#8a93a3" text-anchor="middle">(causal)</text>
+
+  <line x1="556" y1="120" x2="608" y2="120" stroke="#565e6b" stroke-width="2.5"/>
+  <polygon points="608,120 594,113 594,127" fill="#565e6b"/>
+
+  <!-- ③ softmax -->
+  <rect x="612" y="60" width="200" height="120" rx="10" fill="#f7f9fc" stroke="#d4dae3" stroke-width="2"/>
+  <text x="712" y="96" font-size="20" font-weight="700" fill="#8a93a3" text-anchor="middle">③ 정규화</text>
+  <text x="712" y="128" font-size="17" fill="#565e6b" text-anchor="middle">A = softmax(S)</text>
+  <text x="712" y="152" font-size="15" fill="#8a93a3" text-anchor="middle">합이 1인 가중치</text>
+
+  <line x1="812" y1="120" x2="864" y2="120" stroke="#565e6b" stroke-width="2.5"/>
+  <polygon points="864,120 850,113 850,127" fill="#565e6b"/>
+
+  <!-- ④ 가중합 -->
+  <rect x="868" y="60" width="200" height="120" rx="10" fill="#f7f9fc" stroke="#d4dae3" stroke-width="2"/>
+  <text x="968" y="96" font-size="20" font-weight="700" fill="#8a93a3" text-anchor="middle">④ 가중합</text>
+  <text x="968" y="128" font-size="17" fill="#565e6b" text-anchor="middle">O = A · V</text>
+  <text x="968" y="152" font-size="15" fill="#8a93a3" text-anchor="middle">출력 벡터</text>
+
+  <!-- 범위 밖 띠 -->
+  <rect x="356" y="196" width="712" height="34" rx="6" fill="#f2f4f7" stroke="#d4dae3" stroke-width="1.5"/>
+  <text x="712" y="219" font-size="16" font-weight="700" fill="#8a93a3" text-anchor="middle">범위 밖 — 이 프로젝트는 다루지 않는다</text>
+
+  <line x1="60" y1="266" x2="1220" y2="266" stroke="#d4dae3" stroke-width="1.5"/>
+
+  <!-- 왜 ①만 -->
+  <text x="60" y="300" font-size="19" font-weight="700" fill="#16181d">왜 ①에서만 건너뛸 수 있는가</text>
+  <text x="60" y="332" font-size="16" fill="#565e6b">③ softmax 는 지수함수라 <tspan font-weight="700" fill="#16181d">모든 점수가 나와야</tspan> 분모를 만들 수 있다 — 건너뛸 대상이 없다.</text>
+  <text x="60" y="358" font-size="16" fill="#565e6b">④ 가중합은 이미 정해진 비율대로 더하는 것이라 마찬가지다.</text>
+  <text x="60" y="384" font-size="16" fill="#565e6b">① 만이 <tspan font-weight="700" fill="#1b6ed0">"이 토큰은 상위 k 에 못 든다"를 계산 도중에 확정</tspan>할 수 있는 자리다.</text>
+</svg>

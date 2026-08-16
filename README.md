@@ -35,6 +35,7 @@
 | 목적 | 읽을 것 |
 |---|---|
 | **처음이라 배경이 없다면** | [docs/background/transformer.md](docs/background/transformer.md) → [architecture.md](architecture.md) §0~1 |
+| **손으로 따라가 보려면** | [docs/background/attention_walkthrough.md](docs/background/attention_walkthrough.md) — 4토큰 수치 예제로 종단까지 |
 | **대상 모델이 궁금하다면** | [docs/background/llama_3_2_1b.md](docs/background/llama_3_2_1b.md) — 스펙·성능·KV 캐시 크기 |
 | **설계를 이해하려면** | [architecture.md](architecture.md) §2~3 — **★ §2 양자화 규약이 나머지 전부의 전제다** |
 | **왜 이걸 하는지** | [related_work.md](related_work.md) §0 — PADE 가 이미 존재한다는 사실부터 |

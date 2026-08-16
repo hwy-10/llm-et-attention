@@ -16,7 +16,7 @@
 |---|---|---|
 | `README/` | [README.md](../README.md) | `00_overview.svg` |
 | `architecture/` | [architecture.md](../architecture.md) | `00_overview.svg`, `05_finding.svg`, `bitplane_layout.svg` |
-| `docs_background/` | `docs/background/*.md` | (아직 없음 — 트랜스포머 배경 그림 자리) |
+| `docs_background/` | `docs/background/*.md` | `attention_pipeline.svg`, `causal_decode.svg`, `bound_narrowing.svg` |
 | `deck/` | 발표 | 16:9 슬라이드 6장 |
 
 ### 발표용 슬라이드 (`deck/`)

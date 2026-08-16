@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 470" width="1280" height="470"
+     font-family="Malgun Gothic, Segoe UI, sans-serif">
+  <rect width="1280" height="470" fill="#ffffff"/>
+
+  <text x="60" y="44" font-size="19" font-weight="700" fill="#16181d">Decode — 스텝마다 쿼리는 하나, 읽어야 할 K 는 계속 늘어난다</text>
+
+  <!-- ============ step t=3 ============ -->
+  <text x="60" y="92" font-size="17" font-weight="700" fill="#16181d">스텝 3</text>
+  <text x="60" y="116" font-size="14" fill="#8a93a3">쿼리 1개</text>
+
+  <rect x="150" y="76" width="46" height="46" rx="5" fill="#eb6834" stroke="#c8392b" stroke-width="2"/>
+  <text x="173" y="105" font-size="15" font-weight="700" fill="#ffffff" text-anchor="middle">q3</text>
+  <text x="212" y="105" font-size="20" fill="#565e6b">×</text>
+
+  <rect x="240" y="76" width="46" height="46" rx="5" fill="#dfeafa" stroke="#1b6ed0" stroke-width="2"/>
+  <text x="263" y="105" font-size="15" fill="#16181d" text-anchor="middle">K0</text>
+  <rect x="292" y="76" width="46" height="46" rx="5" fill="#dfeafa" stroke="#1b6ed0" stroke-width="2"/>
+  <text x="315" y="105" font-size="15" fill="#16181d" text-anchor="middle">K1</text>
+  <rect x="344" y="76" width="46" height="46" rx="5" fill="#dfeafa" stroke="#1b6ed0" stroke-width="2"/>
+  <text x="367" y="105" font-size="15" fill="#16181d" text-anchor="middle">K2</text>
+  <rect x="396" y="76" width="46" height="46" rx="5" fill="#1baf7a" stroke="#199e70" stroke-width="2"/>
+  <text x="419" y="105" font-size="15" font-weight="700" fill="#ffffff" text-anchor="middle">K3</text>
+
+  <rect x="448" y="76" width="46" height="46" rx="5" fill="#ffffff" stroke="#e4e8ee" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <rect x="500" y="76" width="46" height="46" rx="5" fill="#ffffff" stroke="#e4e8ee" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <text x="580" y="105" font-size="14" fill="#8a93a3">미래 — 가려짐 (causal)</text>
+
+  <text x="790" y="105" font-size="16" fill="#565e6b">점수 <tspan font-weight="700" fill="#16181d">4개</tspan> 계산</text>
+
+  <!-- ============ step t=4 ============ -->
+  <text x="60" y="192" font-size="17" font-weight="700" fill="#16181d">스텝 4</text>
+  <text x="60" y="216" font-size="14" fill="#8a93a3">쿼리 1개</text>
+
+  <rect x="150" y="176" width="46" height="46" rx="5" fill="#eb6834" stroke="#c8392b" stroke-width="2"/>
+  <text x="173" y="205" font-size="15" font-weight="700" fill="#ffffff" text-anchor="middle">q4</text>
+  <text x="212" y="205" font-size="20" fill="#565e6b">×</text>
+
+  <rect x="240" y="176" width="46" height="46" rx="5" fill="#dfeafa" stroke="#1b6ed0" stroke-width="2"/>
+  <text x="263" y="205" font-size="15" fill="#16181d" text-anchor="middle">K0</text>
+  <rect x="292" y="176" width="46" height="46" rx="5" fill="#dfeafa" stroke="#1b6ed0" stroke-width="2"/>
+  <text x="315" y="205" font-size="15" fill="#16181d" text-anchor="middle">K1</text>
+  <rect x="344" y="176" width="46" height="46" rx="5" fill="#dfeafa" stroke="#1b6ed0" stroke-width="2"/>
+  <text x="367" y="205" font-size="15" fill="#16181d" text-anchor="middle">K2</text>
+  <rect x="396" y="176" width="46" height="46" rx="5" fill="#dfeafa" stroke="#1b6ed0" stroke-width="2"/>
+  <text x="419" y="205" font-size="15" fill="#16181d" text-anchor="middle">K3</text>
+  <rect x="448" y="176" width="46" height="46" rx="5" fill="#1baf7a" stroke="#199e70" stroke-width="2"/>
+  <text x="471" y="205" font-size="15" font-weight="700" fill="#ffffff" text-anchor="middle">K4</text>
+
+  <rect x="500" y="176" width="46" height="46" rx="5" fill="#ffffff" stroke="#e4e8ee" stroke-width="1.5" stroke-dasharray="4 3"/>
+
+  <text x="790" y="205" font-size="16" fill="#565e6b">점수 <tspan font-weight="700" fill="#16181d">5개</tspan> 계산</text>
+
+  <!-- ============ step t=5 ============ -->
+  <text x="60" y="292" font-size="17" font-weight="700" fill="#16181d">스텝 5</text>
+  <text x="60" y="316" font-size="14" fill="#8a93a3">쿼리 1개</text>
+
+  <rect x="150" y="276" width="46" height="46" rx="5" fill="#eb6834" stroke="#c8392b" stroke-width="2"/>
+  <text x="173" y="305" font-size="15" font-weight="700" fill="#ffffff" text-anchor="middle">q5</text>
+  <text x="212" y="305" font-size="20" fill="#565e6b">×</text>
+
+  <rect x="240" y="276" width="46" height="46" rx="5" fill="#dfeafa" stroke="#1b6ed0" stroke-width="2"/>
+  <text x="263" y="305" font-size="15" fill="#16181d" text-anchor="middle">K0</text>
+  <rect x="292" y="276" width="46" height="46" rx="5" fill="#dfeafa" stroke="#1b6ed0" stroke-width="2"/>
+  <text x="315" y="305" font-size="15" fill="#16181d" text-anchor="middle">K1</text>
+  <rect x="344" y="276" width="46" height="46" rx="5" fill="#dfeafa" stroke="#1b6ed0" stroke-width="2"/>
+  <text x="367" y="305" font-size="15" fill="#16181d" text-anchor="middle">K2</text>
+  <rect x="396" y="276" width="46" height="46" rx="5" fill="#dfeafa" stroke="#1b6ed0" stroke-width="2"/>
+  <text x="419" y="305" font-size="15" fill="#16181d" text-anchor="middle">K3</text>
+  <rect x="448" y="276" width="46" height="46" rx="5" fill="#dfeafa" stroke="#1b6ed0" stroke-width="2"/>
+  <text x="471" y="305" font-size="15" fill="#16181d" text-anchor="middle">K4</text>
+  <rect x="500" y="276" width="46" height="46" rx="5" fill="#1baf7a" stroke="#199e70" stroke-width="2"/>
+  <text x="523" y="305" font-size="15" font-weight="700" fill="#ffffff" text-anchor="middle">K5</text>
+
+  <text x="790" y="305" font-size="16" fill="#565e6b">점수 <tspan font-weight="700" fill="#16181d">6개</tspan> 계산</text>
+
+  <!-- 범례 -->
+  <rect x="150" y="352" width="26" height="26" rx="4" fill="#eb6834" stroke="#c8392b" stroke-width="2"/>
+  <text x="186" y="371" font-size="15" fill="#565e6b">이번 스텝의 쿼리 (매번 1개)</text>
+  <rect x="440" y="352" width="26" height="26" rx="4" fill="#1baf7a" stroke="#199e70" stroke-width="2"/>
+  <text x="476" y="371" font-size="15" fill="#565e6b">이번에 <tspan font-weight="700" fill="#16181d">새로 쓰는</tspan> K (1건)</text>
+  <rect x="740" y="352" width="26" height="26" rx="4" fill="#dfeafa" stroke="#1b6ed0" stroke-width="2"/>
+  <text x="776" y="371" font-size="15" fill="#565e6b">캐시에서 <tspan font-weight="700" fill="#16181d">다시 읽는</tspan> K</text>
+
+  <line x1="60" y1="400" x2="1220" y2="400" stroke="#d4dae3" stroke-width="1.5"/>
+  <text x="60" y="430" font-size="17" font-weight="700" fill="#c8392b">쓰기 1 : 읽기 N — 그래서 병목이 연산이 아니라 메모리다</text>
+  <text x="60" y="456" font-size="16" fill="#565e6b">토큰 t 의 K 는 t 스텝에 한 번 저장된 뒤 이후 모든 스텝에서 읽힌다. 길이 T 이면 평균 T/2 회 재사용.</text>
+</svg>
