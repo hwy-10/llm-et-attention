@@ -1,189 +1,181 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720"
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 540" width="1280" height="540"
      font-family="Malgun Gothic, Segoe UI, sans-serif">
-  <rect width="1280" height="720" fill="#ffffff"/>
-
-  <text x="80" y="92" font-size="42" font-weight="700" fill="#16181d">같은 자리수끼리 모아서 저장한다</text>
-  <text x="80" y="132" font-size="22" fill="#565e6b">상위 비트만 따로 읽으려면, 토큰 단위가 아니라 자리수 단위로 묶여 있어야 한다</text>
-  <line x1="80" y1="162" x2="1200" y2="162" stroke="#d4dae3" stroke-width="1.5"/>
+  <rect width="1280" height="540" fill="#ffffff"/>
 
   <!-- ================= LEFT : 일반 저장 ================= -->
-  <text x="80" y="212" font-size="24" font-weight="700" fill="#16181d">일반 저장 — 토큰 하나가 한 덩어리</text>
+  <text x="80" y="52" font-size="24" font-weight="700" fill="#16181d">일반 저장 — 토큰 하나가 한 덩어리</text>
 
-  <text x="145" y="250" font-size="14" fill="#8a93a3" text-anchor="middle">b7</text>
-  <text x="183" y="250" font-size="14" fill="#8a93a3" text-anchor="middle">b6</text>
-  <text x="221" y="250" font-size="14" fill="#8a93a3" text-anchor="middle">b5</text>
-  <text x="259" y="250" font-size="14" fill="#8a93a3" text-anchor="middle">b4</text>
-  <text x="297" y="250" font-size="14" fill="#8a93a3" text-anchor="middle">b3</text>
-  <text x="335" y="250" font-size="14" fill="#8a93a3" text-anchor="middle">b2</text>
-  <text x="373" y="250" font-size="14" fill="#8a93a3" text-anchor="middle">b1</text>
-  <text x="411" y="250" font-size="14" fill="#8a93a3" text-anchor="middle">b0</text>
+  <text x="145" y="90" font-size="14" fill="#8a93a3" text-anchor="middle">b7</text>
+  <text x="183" y="90" font-size="14" fill="#8a93a3" text-anchor="middle">b6</text>
+  <text x="221" y="90" font-size="14" fill="#8a93a3" text-anchor="middle">b5</text>
+  <text x="259" y="90" font-size="14" fill="#8a93a3" text-anchor="middle">b4</text>
+  <text x="297" y="90" font-size="14" fill="#8a93a3" text-anchor="middle">b3</text>
+  <text x="335" y="90" font-size="14" fill="#8a93a3" text-anchor="middle">b2</text>
+  <text x="373" y="90" font-size="14" fill="#8a93a3" text-anchor="middle">b1</text>
+  <text x="411" y="90" font-size="14" fill="#8a93a3" text-anchor="middle">b0</text>
 
   <!-- K1 = 1 0 1 1 0 1 0 1 -->
-  <text x="112" y="285" font-size="17" font-weight="700" fill="#16181d" text-anchor="end">K1</text>
-  <rect x="128" y="262" width="34" height="34" rx="4" fill="#dfeafa" stroke="#1b6ed0" stroke-width="1.8"/>
-  <text x="145" y="285" font-size="16" fill="#16181d" text-anchor="middle">1</text>
-  <rect x="166" y="262" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
-  <text x="183" y="285" font-size="16" fill="#16181d" text-anchor="middle">0</text>
-  <rect x="204" y="262" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
-  <text x="221" y="285" font-size="16" fill="#16181d" text-anchor="middle">1</text>
-  <rect x="242" y="262" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
-  <text x="259" y="285" font-size="16" fill="#16181d" text-anchor="middle">1</text>
-  <rect x="280" y="262" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
-  <text x="297" y="285" font-size="16" fill="#16181d" text-anchor="middle">0</text>
-  <rect x="318" y="262" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
-  <text x="335" y="285" font-size="16" fill="#16181d" text-anchor="middle">1</text>
-  <rect x="356" y="262" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
-  <text x="373" y="285" font-size="16" fill="#16181d" text-anchor="middle">0</text>
-  <rect x="394" y="262" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
-  <text x="411" y="285" font-size="16" fill="#16181d" text-anchor="middle">1</text>
+  <text x="112" y="125" font-size="17" font-weight="700" fill="#16181d" text-anchor="end">K1</text>
+  <rect x="128" y="102" width="34" height="34" rx="4" fill="#dfeafa" stroke="#1b6ed0" stroke-width="1.8"/>
+  <text x="145" y="125" font-size="16" fill="#16181d" text-anchor="middle">1</text>
+  <rect x="166" y="102" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
+  <text x="183" y="125" font-size="16" fill="#16181d" text-anchor="middle">0</text>
+  <rect x="204" y="102" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
+  <text x="221" y="125" font-size="16" fill="#16181d" text-anchor="middle">1</text>
+  <rect x="242" y="102" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
+  <text x="259" y="125" font-size="16" fill="#16181d" text-anchor="middle">1</text>
+  <rect x="280" y="102" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
+  <text x="297" y="125" font-size="16" fill="#16181d" text-anchor="middle">0</text>
+  <rect x="318" y="102" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
+  <text x="335" y="125" font-size="16" fill="#16181d" text-anchor="middle">1</text>
+  <rect x="356" y="102" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
+  <text x="373" y="125" font-size="16" fill="#16181d" text-anchor="middle">0</text>
+  <rect x="394" y="102" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
+  <text x="411" y="125" font-size="16" fill="#16181d" text-anchor="middle">1</text>
 
   <!-- K2 = 0 1 1 0 1 1 0 0 -->
-  <text x="112" y="331" font-size="17" font-weight="700" fill="#16181d" text-anchor="end">K2</text>
-  <rect x="128" y="308" width="34" height="34" rx="4" fill="#dfeafa" stroke="#1b6ed0" stroke-width="1.8"/>
-  <text x="145" y="331" font-size="16" fill="#16181d" text-anchor="middle">0</text>
-  <rect x="166" y="308" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
-  <text x="183" y="331" font-size="16" fill="#16181d" text-anchor="middle">1</text>
-  <rect x="204" y="308" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
-  <text x="221" y="331" font-size="16" fill="#16181d" text-anchor="middle">1</text>
-  <rect x="242" y="308" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
-  <text x="259" y="331" font-size="16" fill="#16181d" text-anchor="middle">0</text>
-  <rect x="280" y="308" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
-  <text x="297" y="331" font-size="16" fill="#16181d" text-anchor="middle">1</text>
-  <rect x="318" y="308" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
-  <text x="335" y="331" font-size="16" fill="#16181d" text-anchor="middle">1</text>
-  <rect x="356" y="308" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
-  <text x="373" y="331" font-size="16" fill="#16181d" text-anchor="middle">0</text>
-  <rect x="394" y="308" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
-  <text x="411" y="331" font-size="16" fill="#16181d" text-anchor="middle">0</text>
+  <text x="112" y="171" font-size="17" font-weight="700" fill="#16181d" text-anchor="end">K2</text>
+  <rect x="128" y="148" width="34" height="34" rx="4" fill="#dfeafa" stroke="#1b6ed0" stroke-width="1.8"/>
+  <text x="145" y="171" font-size="16" fill="#16181d" text-anchor="middle">0</text>
+  <rect x="166" y="148" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
+  <text x="183" y="171" font-size="16" fill="#16181d" text-anchor="middle">1</text>
+  <rect x="204" y="148" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
+  <text x="221" y="171" font-size="16" fill="#16181d" text-anchor="middle">1</text>
+  <rect x="242" y="148" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
+  <text x="259" y="171" font-size="16" fill="#16181d" text-anchor="middle">0</text>
+  <rect x="280" y="148" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
+  <text x="297" y="171" font-size="16" fill="#16181d" text-anchor="middle">1</text>
+  <rect x="318" y="148" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
+  <text x="335" y="171" font-size="16" fill="#16181d" text-anchor="middle">1</text>
+  <rect x="356" y="148" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
+  <text x="373" y="171" font-size="16" fill="#16181d" text-anchor="middle">0</text>
+  <rect x="394" y="148" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
+  <text x="411" y="171" font-size="16" fill="#16181d" text-anchor="middle">0</text>
 
   <!-- K3 = 1 1 0 0 1 0 1 0 -->
-  <text x="112" y="377" font-size="17" font-weight="700" fill="#16181d" text-anchor="end">K3</text>
-  <rect x="128" y="354" width="34" height="34" rx="4" fill="#dfeafa" stroke="#1b6ed0" stroke-width="1.8"/>
-  <text x="145" y="377" font-size="16" fill="#16181d" text-anchor="middle">1</text>
-  <rect x="166" y="354" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
-  <text x="183" y="377" font-size="16" fill="#16181d" text-anchor="middle">1</text>
-  <rect x="204" y="354" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
-  <text x="221" y="377" font-size="16" fill="#16181d" text-anchor="middle">0</text>
-  <rect x="242" y="354" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
-  <text x="259" y="377" font-size="16" fill="#16181d" text-anchor="middle">0</text>
-  <rect x="280" y="354" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
-  <text x="297" y="377" font-size="16" fill="#16181d" text-anchor="middle">1</text>
-  <rect x="318" y="354" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
-  <text x="335" y="377" font-size="16" fill="#16181d" text-anchor="middle">0</text>
-  <rect x="356" y="354" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
-  <text x="373" y="377" font-size="16" fill="#16181d" text-anchor="middle">1</text>
-  <rect x="394" y="354" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
-  <text x="411" y="377" font-size="16" fill="#16181d" text-anchor="middle">0</text>
+  <text x="112" y="217" font-size="17" font-weight="700" fill="#16181d" text-anchor="end">K3</text>
+  <rect x="128" y="194" width="34" height="34" rx="4" fill="#dfeafa" stroke="#1b6ed0" stroke-width="1.8"/>
+  <text x="145" y="217" font-size="16" fill="#16181d" text-anchor="middle">1</text>
+  <rect x="166" y="194" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
+  <text x="183" y="217" font-size="16" fill="#16181d" text-anchor="middle">1</text>
+  <rect x="204" y="194" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
+  <text x="221" y="217" font-size="16" fill="#16181d" text-anchor="middle">0</text>
+  <rect x="242" y="194" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
+  <text x="259" y="217" font-size="16" fill="#16181d" text-anchor="middle">0</text>
+  <rect x="280" y="194" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
+  <text x="297" y="217" font-size="16" fill="#16181d" text-anchor="middle">1</text>
+  <rect x="318" y="194" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
+  <text x="335" y="217" font-size="16" fill="#16181d" text-anchor="middle">0</text>
+  <rect x="356" y="194" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
+  <text x="373" y="217" font-size="16" fill="#16181d" text-anchor="middle">1</text>
+  <rect x="394" y="194" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
+  <text x="411" y="217" font-size="16" fill="#16181d" text-anchor="middle">0</text>
 
   <!-- 흩어진 b7 강조 -->
-  <rect x="123" y="257" width="44" height="44" rx="6" fill="none" stroke="#c8392b" stroke-width="2.5" stroke-dasharray="6 4"/>
-  <rect x="123" y="303" width="44" height="44" rx="6" fill="none" stroke="#c8392b" stroke-width="2.5" stroke-dasharray="6 4"/>
-  <rect x="123" y="349" width="44" height="44" rx="6" fill="none" stroke="#c8392b" stroke-width="2.5" stroke-dasharray="6 4"/>
+  <rect x="123" y="97" width="44" height="44" rx="6" fill="none" stroke="#c8392b" stroke-width="2.5" stroke-dasharray="6 4"/>
+  <rect x="123" y="143" width="44" height="44" rx="6" fill="none" stroke="#c8392b" stroke-width="2.5" stroke-dasharray="6 4"/>
+  <rect x="123" y="189" width="44" height="44" rx="6" fill="none" stroke="#c8392b" stroke-width="2.5" stroke-dasharray="6 4"/>
 
-  <text x="80" y="424" font-size="19" font-weight="700" fill="#c8392b">b7 은 세 곳에 흩어져 있다</text>
-  <text x="80" y="450" font-size="17" fill="#565e6b">토큰 수만큼 따로 접근해야 한다</text>
+  <text x="80" y="264" font-size="19" font-weight="700" fill="#c8392b">b7 은 세 곳에 흩어져 있다</text>
+  <text x="80" y="290" font-size="17" fill="#565e6b">토큰 수만큼 따로 접근해야 한다</text>
 
   <!-- 쓰기 경로 주의 -->
-  <rect x="80" y="478" width="368" height="132" rx="8" fill="#f7f9fc" stroke="#d4dae3" stroke-width="1.5"/>
-  <text x="100" y="508" font-size="18" font-weight="700" fill="#c8392b">쓰기 경로 주의</text>
-  <text x="100" y="536" font-size="15" fill="#565e6b">새 토큰 하나의 K 를 저장하려면 8비트를</text>
-  <text x="100" y="558" font-size="15" fill="#565e6b">8개 평면에 나눠 써야 해 쓰기가 복잡해진다.</text>
-  <text x="100" y="586" font-size="15" fill="#565e6b">다만 Decode 는 쓰기 1 : 읽기 N 이라 비중이 작다.</text>
+  <rect x="80" y="318" width="368" height="132" rx="8" fill="#f7f9fc" stroke="#d4dae3" stroke-width="1.5"/>
+  <text x="100" y="348" font-size="18" font-weight="700" fill="#c8392b">쓰기 경로 주의</text>
+  <text x="100" y="376" font-size="15" fill="#565e6b">새 토큰 하나의 K 를 저장하려면 8비트를</text>
+  <text x="100" y="398" font-size="15" fill="#565e6b">8개 평면에 나눠 써야 해 쓰기가 복잡해진다.</text>
+  <text x="100" y="426" font-size="15" fill="#565e6b">다만 Decode 는 쓰기 1 : 읽기 N 이라 비중이 작다.</text>
 
   <!-- ================= 가운데 화살표 ================= -->
-  <text x="570" y="300" font-size="18" font-weight="700" fill="#16181d" text-anchor="middle">자리수 기준으로</text>
-  <text x="570" y="324" font-size="18" font-weight="700" fill="#16181d" text-anchor="middle">재배열</text>
-  <line x1="486" y1="352" x2="646" y2="352" stroke="#565e6b" stroke-width="3"/>
-  <polygon points="646,352 630,344 630,360" fill="#565e6b"/>
-  <text x="570" y="386" font-size="15" fill="#8a93a3" text-anchor="middle">저장 위치만 바뀐다</text>
-  <text x="570" y="406" font-size="15" fill="#8a93a3" text-anchor="middle">값은 그대로다</text>
+  <text x="570" y="140" font-size="18" font-weight="700" fill="#16181d" text-anchor="middle">자리수 기준으로</text>
+  <text x="570" y="164" font-size="18" font-weight="700" fill="#16181d" text-anchor="middle">재배열</text>
+  <line x1="486" y1="192" x2="646" y2="192" stroke="#565e6b" stroke-width="3"/>
+  <polygon points="646,192 630,184 630,200" fill="#565e6b"/>
+  <text x="570" y="226" font-size="15" fill="#8a93a3" text-anchor="middle">저장 위치만 바뀐다</text>
+  <text x="570" y="246" font-size="15" fill="#8a93a3" text-anchor="middle">값은 그대로다</text>
 
   <!-- ================= RIGHT : 비트평면 저장 ================= -->
-  <text x="700" y="212" font-size="24" font-weight="700" fill="#16181d">비트평면 저장 — 같은 자리수가 한 덩어리</text>
+  <text x="700" y="52" font-size="24" font-weight="700" fill="#16181d">비트평면 저장 — 같은 자리수가 한 덩어리</text>
 
-  <text x="784" y="250" font-size="14" fill="#8a93a3" text-anchor="end">평면</text>
-  <text x="817" y="250" font-size="14" fill="#8a93a3" text-anchor="middle">K1</text>
-  <text x="855" y="250" font-size="14" fill="#8a93a3" text-anchor="middle">K2</text>
-  <text x="893" y="250" font-size="14" fill="#8a93a3" text-anchor="middle">K3</text>
+  <text x="784" y="90" font-size="14" fill="#8a93a3" text-anchor="end">평면</text>
+  <text x="817" y="90" font-size="14" fill="#8a93a3" text-anchor="middle">K1</text>
+  <text x="855" y="90" font-size="14" fill="#8a93a3" text-anchor="middle">K2</text>
+  <text x="893" y="90" font-size="14" fill="#8a93a3" text-anchor="middle">K3</text>
 
   <!-- b7 : 1 0 1  (강조) -->
-  <text x="784" y="285" font-size="16" font-weight="700" fill="#1b6ed0" text-anchor="end">b7</text>
-  <rect x="800" y="262" width="34" height="34" rx="4" fill="#dfeafa" stroke="#1b6ed0" stroke-width="1.8"/>
-  <text x="817" y="285" font-size="16" fill="#16181d" text-anchor="middle">1</text>
-  <rect x="838" y="262" width="34" height="34" rx="4" fill="#dfeafa" stroke="#1b6ed0" stroke-width="1.8"/>
-  <text x="855" y="285" font-size="16" fill="#16181d" text-anchor="middle">0</text>
-  <rect x="876" y="262" width="34" height="34" rx="4" fill="#dfeafa" stroke="#1b6ed0" stroke-width="1.8"/>
-  <text x="893" y="285" font-size="16" fill="#16181d" text-anchor="middle">1</text>
-  <rect x="795" y="257" width="120" height="44" rx="6" fill="none" stroke="#1b6ed0" stroke-width="2.5"/>
-  <text x="936" y="285" font-size="16" fill="#8a93a3">···  모든 토큰의 b7</text>
+  <text x="784" y="125" font-size="16" font-weight="700" fill="#1b6ed0" text-anchor="end">b7</text>
+  <rect x="800" y="102" width="34" height="34" rx="4" fill="#dfeafa" stroke="#1b6ed0" stroke-width="1.8"/>
+  <text x="817" y="125" font-size="16" fill="#16181d" text-anchor="middle">1</text>
+  <rect x="838" y="102" width="34" height="34" rx="4" fill="#dfeafa" stroke="#1b6ed0" stroke-width="1.8"/>
+  <text x="855" y="125" font-size="16" fill="#16181d" text-anchor="middle">0</text>
+  <rect x="876" y="102" width="34" height="34" rx="4" fill="#dfeafa" stroke="#1b6ed0" stroke-width="1.8"/>
+  <text x="893" y="125" font-size="16" fill="#16181d" text-anchor="middle">1</text>
+  <rect x="795" y="97" width="120" height="44" rx="6" fill="none" stroke="#1b6ed0" stroke-width="2.5"/>
+  <text x="936" y="125" font-size="16" fill="#8a93a3">···  모든 토큰의 b7</text>
 
   <!-- b6 : 0 1 1 -->
-  <text x="784" y="329" font-size="16" fill="#565e6b" text-anchor="end">b6</text>
-  <rect x="800" y="306" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
-  <text x="817" y="329" font-size="16" fill="#16181d" text-anchor="middle">0</text>
-  <rect x="838" y="306" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
-  <text x="855" y="329" font-size="16" fill="#16181d" text-anchor="middle">1</text>
-  <rect x="876" y="306" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
-  <text x="893" y="329" font-size="16" fill="#16181d" text-anchor="middle">1</text>
+  <text x="784" y="169" font-size="16" fill="#565e6b" text-anchor="end">b6</text>
+  <rect x="800" y="146" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
+  <text x="817" y="169" font-size="16" fill="#16181d" text-anchor="middle">0</text>
+  <rect x="838" y="146" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
+  <text x="855" y="169" font-size="16" fill="#16181d" text-anchor="middle">1</text>
+  <rect x="876" y="146" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
+  <text x="893" y="169" font-size="16" fill="#16181d" text-anchor="middle">1</text>
 
   <!-- b5 : 1 1 0 -->
-  <text x="784" y="373" font-size="16" fill="#565e6b" text-anchor="end">b5</text>
-  <rect x="800" y="350" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
-  <text x="817" y="373" font-size="16" fill="#16181d" text-anchor="middle">1</text>
-  <rect x="838" y="350" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
-  <text x="855" y="373" font-size="16" fill="#16181d" text-anchor="middle">1</text>
-  <rect x="876" y="350" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
-  <text x="893" y="373" font-size="16" fill="#16181d" text-anchor="middle">0</text>
+  <text x="784" y="213" font-size="16" fill="#565e6b" text-anchor="end">b5</text>
+  <rect x="800" y="190" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
+  <text x="817" y="213" font-size="16" fill="#16181d" text-anchor="middle">1</text>
+  <rect x="838" y="190" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
+  <text x="855" y="213" font-size="16" fill="#16181d" text-anchor="middle">1</text>
+  <rect x="876" y="190" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
+  <text x="893" y="213" font-size="16" fill="#16181d" text-anchor="middle">0</text>
 
   <!-- b4 : 1 0 0 -->
-  <text x="784" y="417" font-size="16" fill="#565e6b" text-anchor="end">b4</text>
-  <rect x="800" y="394" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
-  <text x="817" y="417" font-size="16" fill="#16181d" text-anchor="middle">1</text>
-  <rect x="838" y="394" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
-  <text x="855" y="417" font-size="16" fill="#16181d" text-anchor="middle">0</text>
-  <rect x="876" y="394" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
-  <text x="893" y="417" font-size="16" fill="#16181d" text-anchor="middle">0</text>
+  <text x="784" y="257" font-size="16" fill="#565e6b" text-anchor="end">b4</text>
+  <rect x="800" y="234" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
+  <text x="817" y="257" font-size="16" fill="#16181d" text-anchor="middle">1</text>
+  <rect x="838" y="234" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
+  <text x="855" y="257" font-size="16" fill="#16181d" text-anchor="middle">0</text>
+  <rect x="876" y="234" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
+  <text x="893" y="257" font-size="16" fill="#16181d" text-anchor="middle">0</text>
 
   <!-- b3 : 0 1 1 -->
-  <text x="784" y="461" font-size="16" fill="#565e6b" text-anchor="end">b3</text>
-  <rect x="800" y="438" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
-  <text x="817" y="461" font-size="16" fill="#16181d" text-anchor="middle">0</text>
-  <rect x="838" y="438" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
-  <text x="855" y="461" font-size="16" fill="#16181d" text-anchor="middle">1</text>
-  <rect x="876" y="438" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
-  <text x="893" y="461" font-size="16" fill="#16181d" text-anchor="middle">1</text>
+  <text x="784" y="301" font-size="16" fill="#565e6b" text-anchor="end">b3</text>
+  <rect x="800" y="278" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
+  <text x="817" y="301" font-size="16" fill="#16181d" text-anchor="middle">0</text>
+  <rect x="838" y="278" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
+  <text x="855" y="301" font-size="16" fill="#16181d" text-anchor="middle">1</text>
+  <rect x="876" y="278" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
+  <text x="893" y="301" font-size="16" fill="#16181d" text-anchor="middle">1</text>
 
   <!-- b2 : 1 1 0 -->
-  <text x="784" y="505" font-size="16" fill="#565e6b" text-anchor="end">b2</text>
-  <rect x="800" y="482" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
-  <text x="817" y="505" font-size="16" fill="#16181d" text-anchor="middle">1</text>
-  <rect x="838" y="482" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
-  <text x="855" y="505" font-size="16" fill="#16181d" text-anchor="middle">1</text>
-  <rect x="876" y="482" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
-  <text x="893" y="505" font-size="16" fill="#16181d" text-anchor="middle">0</text>
+  <text x="784" y="345" font-size="16" fill="#565e6b" text-anchor="end">b2</text>
+  <rect x="800" y="322" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
+  <text x="817" y="345" font-size="16" fill="#16181d" text-anchor="middle">1</text>
+  <rect x="838" y="322" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
+  <text x="855" y="345" font-size="16" fill="#16181d" text-anchor="middle">1</text>
+  <rect x="876" y="322" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
+  <text x="893" y="345" font-size="16" fill="#16181d" text-anchor="middle">0</text>
 
   <!-- b1 : 0 0 1 -->
-  <text x="784" y="549" font-size="16" fill="#565e6b" text-anchor="end">b1</text>
-  <rect x="800" y="526" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
-  <text x="817" y="549" font-size="16" fill="#16181d" text-anchor="middle">0</text>
-  <rect x="838" y="526" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
-  <text x="855" y="549" font-size="16" fill="#16181d" text-anchor="middle">0</text>
-  <rect x="876" y="526" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
-  <text x="893" y="549" font-size="16" fill="#16181d" text-anchor="middle">1</text>
+  <text x="784" y="389" font-size="16" fill="#565e6b" text-anchor="end">b1</text>
+  <rect x="800" y="366" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
+  <text x="817" y="389" font-size="16" fill="#16181d" text-anchor="middle">0</text>
+  <rect x="838" y="366" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
+  <text x="855" y="389" font-size="16" fill="#16181d" text-anchor="middle">0</text>
+  <rect x="876" y="366" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
+  <text x="893" y="389" font-size="16" fill="#16181d" text-anchor="middle">1</text>
 
   <!-- b0 : 1 0 0 -->
-  <text x="784" y="593" font-size="16" fill="#565e6b" text-anchor="end">b0</text>
-  <rect x="800" y="570" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
-  <text x="817" y="593" font-size="16" fill="#16181d" text-anchor="middle">1</text>
-  <rect x="838" y="570" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
-  <text x="855" y="593" font-size="16" fill="#16181d" text-anchor="middle">0</text>
-  <rect x="876" y="570" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
-  <text x="893" y="593" font-size="16" fill="#16181d" text-anchor="middle">0</text>
+  <text x="784" y="433" font-size="16" fill="#565e6b" text-anchor="end">b0</text>
+  <rect x="800" y="410" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
+  <text x="817" y="433" font-size="16" fill="#16181d" text-anchor="middle">1</text>
+  <rect x="838" y="410" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
+  <text x="855" y="433" font-size="16" fill="#16181d" text-anchor="middle">0</text>
+  <rect x="876" y="410" width="34" height="34" rx="4" fill="#ffffff" stroke="#d4dae3" stroke-width="1.8"/>
+  <text x="893" y="433" font-size="16" fill="#16181d" text-anchor="middle">0</text>
 
-  <text x="700" y="640" font-size="19" font-weight="700" fill="#1b6ed0">b7 평면이 통째로 이웃해 있다</text>
-  <text x="700" y="666" font-size="17" fill="#565e6b">한 번의 연속 접근으로 끝난다</text>
-
-  <!-- ================= 결론 ================= -->
-  <line x1="80" y1="688" x2="1200" y2="688" stroke="#d4dae3" stroke-width="1.5"/>
-  <text x="80" y="712" font-size="19" font-weight="700" fill="#16181d">→ 상위 자리만 선택적으로 읽는 것이 물리적으로 가능해진다. 조기 종단이 절감으로 이어지는 전제다.</text>
+  <text x="700" y="480" font-size="19" font-weight="700" fill="#1b6ed0">b7 평면이 통째로 이웃해 있다</text>
+  <text x="700" y="506" font-size="17" fill="#565e6b">한 번의 연속 접근으로 끝난다</text>
 </svg>
