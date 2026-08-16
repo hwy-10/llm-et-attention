@@ -3,7 +3,7 @@
 이 문서는 아래 조감도 한 장을 글로 풀어쓴 것이다.
 **설계 자체**를 설명한다. 
 
-![프로젝트 전체 조감도](slides/00_overview.svg)
+![프로젝트 전체 조감도](slides/architecture/00_overview.svg)
 
 
 조감도에서 **제안 설계가 프로젝트에서 만들 부분**이고, 왼쪽은 전제, 오른쪽은 검증이다.  
@@ -330,7 +330,7 @@ BRAM은 토큰을 하나씩 읽지 않는다. 한 워드에 `word_tokens` 개 �
 | `read_saving_bram` | 실제 BRAM 워드 읽기 기준 — **실현** |
 
 이 격차가 work-compaction 이 필요한 진짜 이유다.
-자세한 그림은 [slides/05_finding.svg](slides/05_finding.svg) 참조.
+자세한 그림은 [slides/architecture/05_finding.svg](slides/architecture/05_finding.svg) 참조.
 
 ### 6-2. 종단 시점의 불규칙성
 
@@ -425,5 +425,5 @@ BRAM은 토큰을 하나씩 읽지 않는다. 한 워드에 `word_tokens` 개 �
 
 * [README.md](README.md) — 실행 방법과 실험 목록
 * [STRUCTURE.md](STRUCTURE.md) — 파일 구조와 설계 원칙
-* [slides/](slides/) — 발표용 16:9 슬라이드 6장
+* [slides/deck/](slides/deck/) — 발표용 16:9 슬라이드 6장
 * [rtl_data/schema.md](rtl_data/schema.md) — RTL 팀과의 데이터 계약

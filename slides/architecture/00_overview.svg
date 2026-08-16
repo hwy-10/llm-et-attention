@@ -1,0 +1,104 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720"
+     font-family="Malgun Gothic, Segoe UI, sans-serif">
+  <rect width="1280" height="720" fill="#ffffff"/>
+
+  <text x="80" y="88" font-size="42" font-weight="700" fill="#16181d">프로젝트 전체 구성</text>
+  <text x="80" y="128" font-size="21" fill="#565e6b">무엇을 대상으로, 무엇을 만들고, 무엇을 측정하는가</text>
+  <line x1="80" y1="156" x2="1200" y2="156" stroke="#d4dae3" stroke-width="1.5"/>
+
+  <!-- ══════════ 열 머리말 ══════════ -->
+  <text x="80"  y="190" font-size="18" font-weight="700" fill="#565e6b">대상</text>
+  <text x="380" y="190" font-size="18" font-weight="700" fill="#1b6ed0">제안 설계</text>
+  <text x="950" y="190" font-size="18" font-weight="700" fill="#565e6b">검증</text>
+
+  <!-- ══════════ 1열 : 대상 ══════════ -->
+  <rect x="80" y="204" width="250" height="396" rx="8" fill="#f4f6fa" stroke="#d4dae3" stroke-width="1.6"/>
+
+  <text x="104" y="250" font-size="20" font-weight="700" fill="#16181d">어텐션 점수 계산</text>
+  <text x="104" y="276" font-size="17" fill="#565e6b">Q · K^T</text>
+  <line x1="104" y1="300" x2="306" y2="300" stroke="#d4dae3" stroke-width="1.2"/>
+
+  <text x="104" y="336" font-size="20" font-weight="700" fill="#16181d">Decode 단계</text>
+  <text x="104" y="362" font-size="17" fill="#565e6b">쓰기 1 : 읽기 N</text>
+  <line x1="104" y1="386" x2="306" y2="386" stroke="#d4dae3" stroke-width="1.2"/>
+
+  <text x="104" y="422" font-size="20" font-weight="700" fill="#16181d">INT8 정수</text>
+  <text x="104" y="448" font-size="16" fill="#565e6b">Llama 3.2 1B · d = 64</text>
+  <line x1="104" y1="472" x2="306" y2="472" stroke="#d4dae3" stroke-width="1.2"/>
+
+  <text x="104" y="508" font-size="20" font-weight="700" fill="#16181d">비트평면 저장</text>
+  <text x="104" y="534" font-size="16" fill="#565e6b">같은 자리수끼리 모아서</text>
+  <text x="104" y="556" font-size="16" fill="#565e6b">상위 자리만 골라 읽는다</text>
+
+  <path d="M330 400 H 362" stroke="#565e6b" stroke-width="2.5" fill="none"/>
+  <polygon points="376,400 361,393 361,407" fill="#565e6b"/>
+
+  <!-- ══════════ 2열 : 제안 설계 ══════════ -->
+  <rect x="380" y="204" width="520" height="396" rx="10" fill="#ffffff" stroke="#1b6ed0" stroke-width="2"/>
+
+  <rect x="404" y="232" width="210" height="80" rx="8" fill="#fbe6e3" stroke="#c8392b" stroke-width="2"/>
+  <text x="509" y="268" font-size="21" font-weight="700" fill="#16181d" text-anchor="middle">비트평면 BRAM</text>
+  <text x="509" y="292" font-size="16" fill="#565e6b" text-anchor="middle">평면 단위 읽기</text>
+
+  <rect x="666" y="232" width="210" height="80" rx="8" fill="#f8eeda" stroke="#a5620c" stroke-width="2"/>
+  <text x="771" y="268" font-size="21" font-weight="700" fill="#16181d" text-anchor="middle">Q+ / Q- 레지스터</text>
+  <text x="771" y="292" font-size="15" fill="#565e6b" text-anchor="middle">스텝당 1회 · 잔여 상하한</text>
+
+  <path d="M509 312 V 346" stroke="#565e6b" stroke-width="2.5" fill="none"/>
+  <polygon points="509,360 502,345 516,345" fill="#565e6b"/>
+  <path d="M771 312 V 346" stroke="#a5620c" stroke-width="2.5" fill="none"/>
+  <polygon points="771,360 764,345 778,345" fill="#a5620c"/>
+
+  <rect x="404" y="360" width="210" height="80" rx="8" fill="#f4f6fa" stroke="#98a0ac" stroke-width="2"/>
+  <text x="509" y="396" font-size="21" font-weight="700" fill="#16181d" text-anchor="middle">부분 내적 · 누산</text>
+  <text x="509" y="420" font-size="15" fill="#565e6b" text-anchor="middle">곱셈기 없음 · 시프트 가산</text>
+
+  <rect x="666" y="360" width="210" height="80" rx="8" fill="#dfeafa" stroke="#1b6ed0" stroke-width="2.4"/>
+  <text x="771" y="396" font-size="21" font-weight="700" fill="#16181d" text-anchor="middle">종단 판정</text>
+  <text x="771" y="420" font-size="16" fill="#565e6b" text-anchor="middle">상한 &lt; θ 이면 중단</text>
+
+  <path d="M614 400 H 652" stroke="#565e6b" stroke-width="2.5" fill="none"/>
+  <polygon points="666,400 651,393 651,407" fill="#565e6b"/>
+
+  <!-- 차단 되먹임 -->
+  <path d="M771 440 V 478 H 390 V 272" stroke="#c8392b" stroke-width="3" fill="none"/>
+  <polygon points="404,272 389,265 389,279" fill="#c8392b"/>
+
+  <text x="404" y="512" font-size="20" font-weight="700" fill="#c8392b">읽기 요청 차단</text>
+  <text x="404" y="538" font-size="17" fill="#c8392b">중단된 토큰은 다음 평면을 읽지 않는다</text>
+  <line x1="404" y1="556" x2="876" y2="556" stroke="#d4dae3" stroke-width="1.2"/>
+  <text x="404" y="580" font-size="16" fill="#565e6b">정확 모드는 손실 없는 판정 — 상위 k 를 잃지 않는다</text>
+
+  <path d="M900 400 H 932" stroke="#565e6b" stroke-width="2.5" fill="none"/>
+  <polygon points="946,400 931,393 931,407" fill="#565e6b"/>
+
+  <!-- ══════════ 3열 : 검증 ══════════ -->
+  <rect x="950" y="204" width="250" height="136" rx="8" fill="#f4f6fa" stroke="#d4dae3" stroke-width="1.6"/>
+  <text x="974" y="234" font-size="20" font-weight="700" fill="#16181d">4종 비교</text>
+  <text x="974" y="260" font-size="16" fill="#565e6b">① 병렬 INT8 MAC</text>
+  <text x="974" y="282" font-size="16" fill="#565e6b">② 비트평면 순차</text>
+  <text x="974" y="304" font-size="16" fill="#1b6ed0">③ 정확 모드 종단</text>
+  <text x="974" y="326" font-size="16" fill="#c8392b">④ 근사 모드 종단</text>
+
+  <path d="M1075 340 V 348" stroke="#565e6b" stroke-width="2.5" fill="none"/>
+  <polygon points="1075,362 1068,347 1082,347" fill="#565e6b"/>
+
+  <rect x="950" y="364" width="250" height="114" rx="8" fill="#f4f6fa" stroke="#d4dae3" stroke-width="1.6"/>
+  <text x="974" y="394" font-size="20" font-weight="700" fill="#16181d">측정</text>
+  <text x="974" y="420" font-size="16" fill="#565e6b">상위 k 보존율</text>
+  <text x="974" y="442" font-size="16" fill="#565e6b">사이클 · BRAM 읽기</text>
+  <text x="974" y="464" font-size="16" fill="#565e6b">LUT · DSP · Fmax · 전력</text>
+
+  <path d="M1075 478 V 486" stroke="#565e6b" stroke-width="2.5" fill="none"/>
+  <polygon points="1075,500 1068,485 1082,485" fill="#565e6b"/>
+
+  <rect x="950" y="502" width="250" height="98" rx="8" fill="#dfeafa" stroke="#1b6ed0" stroke-width="2.4"/>
+  <text x="974" y="532" font-size="20" font-weight="700" fill="#16181d">결론</text>
+  <text x="974" y="558" font-size="16" fill="#565e6b">이득이 비용을 넘어서는</text>
+  <text x="974" y="580" font-size="16" fill="#565e6b">조건의 경계</text>
+
+  <!-- ══════════ 하단 띠 ══════════ -->
+  <rect x="80" y="624" width="1120" height="62" rx="6" fill="#f4f6fa" stroke="#d4dae3" stroke-width="1.6"/>
+  <text x="108" y="652" font-size="20" font-weight="700" fill="#16181d">소프트웨어 검증은 RTL 없이 끝까지 진행된다 — 실측은 파일 두 개로 합류한다</text>
+  <text x="108" y="676" font-size="16" fill="#565e6b">hardware.yaml (워드폭 · 판정 지연 · 자원 · Fmax)  ·  rtl_data (사이클 · 읽기 · 합성 보고서)  →  예측과 실측을 자동 대조</text>
+</svg>

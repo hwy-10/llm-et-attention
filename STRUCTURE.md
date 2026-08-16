@@ -63,6 +63,25 @@ llm_et_attention/
 ├── run_paper_experiments.py     오케스트레이터 (--only / --skip / --figures-only / --crosscheck)
 ├── STRUCTURE.md                 이 문서
 ├── README.md                    재현 가이드
+├── architecture.md              전체 조감도 해설 (설계 자체)
+├── related_work.md              선행연구 조사 (2026-08)
+│
+├── docs/
+│   └── background/              배경지식 문서
+│       └── transformer.md
+│
+├── slides/                      ★ 그림은 "쓰는 문서" 기준으로 나눈다
+│   ├── README/                  README.md 용
+│   │   └── 00_overview.svg
+│   ├── architecture/            architecture.md 용
+│   │   ├── 00_overview.svg
+│   │   └── 05_finding.svg
+│   ├── docs_background/         docs/background/*.md 용
+│   └── deck/                    발표용 16:9 슬라이드 6장
+│       └── 00_overview ~ 05_finding.svg
+│
+│   ※ 같은 그림이 여러 문서에 쓰이면 폴더마다 사본을 둔다.
+│     문서별로 따로 손볼 수 있게 하려는 의도이며, 사본끼리 자동 동기화되지 않는다.
 │
 ├── config/                      ★ 설정만 고치면 실험 범위가 바뀐다 (코드 무수정)
 │   ├── model.yaml               Llama 3.2 1B 스펙 + 디코드 루프 설정

@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720"
+     font-family="Malgun Gothic, Segoe UI, sans-serif">
+  <rect width="1280" height="720" fill="#ffffff"/>
+
+  <text x="80" y="92" font-size="42" font-weight="700" fill="#16181d">메모리는 토큰을 하나씩 읽지 않는다</text>
+  <text x="80" y="132" font-size="22" fill="#565e6b">한 워드에 여러 토큰이 묶여 있다 — 하나라도 살아 있으면 워드 전체를 읽어야 한다</text>
+  <line x1="80" y1="162" x2="1200" y2="162" stroke="#d4dae3" stroke-width="1.5"/>
+
+  <!-- ROW A : scattered -->
+  <text x="80" y="230" font-size="24" font-weight="700" fill="#16181d">중단된 토큰이 흩어져 있으면</text>
+
+  <rect x="82" y="252" width="212" height="64" rx="6" fill="none" stroke="#c8392b" stroke-width="2.5"/>
+  <rect x="96"  y="266" width="36" height="36" rx="4" fill="#dfeafa" stroke="#1b6ed0" stroke-width="1.8"/>
+  <rect x="140" y="266" width="36" height="36" rx="4" fill="none" stroke="#d4dae3" stroke-width="1.8"/>
+  <rect x="184" y="266" width="36" height="36" rx="4" fill="none" stroke="#d4dae3" stroke-width="1.8"/>
+  <rect x="228" y="266" width="36" height="36" rx="4" fill="none" stroke="#d4dae3" stroke-width="1.8"/>
+
+  <rect x="322" y="252" width="212" height="64" rx="6" fill="none" stroke="#c8392b" stroke-width="2.5"/>
+  <rect x="336" y="266" width="36" height="36" rx="4" fill="none" stroke="#d4dae3" stroke-width="1.8"/>
+  <rect x="380" y="266" width="36" height="36" rx="4" fill="none" stroke="#d4dae3" stroke-width="1.8"/>
+  <rect x="424" y="266" width="36" height="36" rx="4" fill="#dfeafa" stroke="#1b6ed0" stroke-width="1.8"/>
+  <rect x="468" y="266" width="36" height="36" rx="4" fill="none" stroke="#d4dae3" stroke-width="1.8"/>
+
+  <rect x="562" y="252" width="212" height="64" rx="6" fill="none" stroke="#c8392b" stroke-width="2.5"/>
+  <rect x="576" y="266" width="36" height="36" rx="4" fill="none" stroke="#d4dae3" stroke-width="1.8"/>
+  <rect x="620" y="266" width="36" height="36" rx="4" fill="#dfeafa" stroke="#1b6ed0" stroke-width="1.8"/>
+  <rect x="664" y="266" width="36" height="36" rx="4" fill="none" stroke="#d4dae3" stroke-width="1.8"/>
+  <rect x="708" y="266" width="36" height="36" rx="4" fill="none" stroke="#d4dae3" stroke-width="1.8"/>
+
+  <rect x="802" y="252" width="212" height="64" rx="6" fill="none" stroke="#c8392b" stroke-width="2.5"/>
+  <rect x="816" y="266" width="36" height="36" rx="4" fill="none" stroke="#d4dae3" stroke-width="1.8"/>
+  <rect x="860" y="266" width="36" height="36" rx="4" fill="none" stroke="#d4dae3" stroke-width="1.8"/>
+  <rect x="904" y="266" width="36" height="36" rx="4" fill="none" stroke="#d4dae3" stroke-width="1.8"/>
+  <rect x="948" y="266" width="36" height="36" rx="4" fill="#dfeafa" stroke="#1b6ed0" stroke-width="1.8"/>
+
+  <text x="1050" y="278" font-size="44" font-weight="700" fill="#c8392b">4 / 4</text>
+  <text x="1050" y="306" font-size="19" fill="#565e6b">워드를 전부 읽는다</text>
+
+  <!-- ROW B : compacted -->
+  <text x="80" y="416" font-size="24" font-weight="700" fill="#16181d">살아남은 토큰을 앞으로 몰아주면</text>
+
+  <rect x="82" y="438" width="212" height="64" rx="6" fill="none" stroke="#c8392b" stroke-width="2.5"/>
+  <rect x="96"  y="452" width="36" height="36" rx="4" fill="#dfeafa" stroke="#1b6ed0" stroke-width="1.8"/>
+  <rect x="140" y="452" width="36" height="36" rx="4" fill="#dfeafa" stroke="#1b6ed0" stroke-width="1.8"/>
+  <rect x="184" y="452" width="36" height="36" rx="4" fill="#dfeafa" stroke="#1b6ed0" stroke-width="1.8"/>
+  <rect x="228" y="452" width="36" height="36" rx="4" fill="#dfeafa" stroke="#1b6ed0" stroke-width="1.8"/>
+
+  <rect x="322" y="438" width="212" height="64" rx="6" fill="none" stroke="#d4dae3" stroke-width="2" stroke-dasharray="7 6"/>
+  <text x="428" y="478" font-size="21" fill="#98a0ac" text-anchor="middle">건너뜀</text>
+
+  <rect x="562" y="438" width="212" height="64" rx="6" fill="none" stroke="#d4dae3" stroke-width="2" stroke-dasharray="7 6"/>
+  <text x="668" y="478" font-size="21" fill="#98a0ac" text-anchor="middle">건너뜀</text>
+
+  <rect x="802" y="438" width="212" height="64" rx="6" fill="none" stroke="#d4dae3" stroke-width="2" stroke-dasharray="7 6"/>
+  <text x="908" y="478" font-size="21" fill="#98a0ac" text-anchor="middle">건너뜀</text>
+
+  <text x="1050" y="464" font-size="44" font-weight="700" fill="#1b6ed0">1 / 4</text>
+  <text x="1050" y="492" font-size="19" fill="#565e6b">한 워드만 읽는다</text>
+
+  <!-- legend -->
+  <rect x="82" y="546" width="26" height="26" rx="4" fill="#dfeafa" stroke="#1b6ed0" stroke-width="1.8"/>
+  <text x="120" y="566" font-size="19" fill="#565e6b">살아있는 토큰</text>
+  <rect x="272" y="546" width="26" height="26" rx="4" fill="none" stroke="#d4dae3" stroke-width="1.8"/>
+  <text x="310" y="566" font-size="19" fill="#565e6b">중단된 토큰</text>
+
+  <!-- takeaway -->
+  <rect x="80" y="608" width="1120" height="72" rx="6" fill="#fbe6e3" stroke="#c8392b" stroke-width="1.8"/>
+  <text x="108" y="642" font-size="23" font-weight="700" fill="#16181d">같은 수가 살아 있어도 배치가 다르면 읽기량이 다르다</text>
+  <text x="108" y="670" font-size="19" fill="#565e6b">실측: 이론 절감 27.9% → 흩어진 배치 3.8% · 압축 26.6% &#160;(워드당 32토큰 기준)</text>
+</svg>

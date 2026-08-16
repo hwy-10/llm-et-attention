@@ -8,7 +8,7 @@
 상위 비트 우선(MSB-first) 비트평면 계산 + 조기 종단(early termination)을 하드웨어로 구현하고, **이 기법이 실제로 이득이 되는
 조건의 경계**를 RTL 실측까지 포함해 정량화한다.
 
-![프로젝트 전체 구성](slides/00_overview.svg)
+![프로젝트 전체 구성](slides/README/00_overview.svg)
 
 이 저장소의 파이썬 스택은 결과물이 아니라 **RTL의 골든 레퍼런스**다.
 
@@ -28,7 +28,7 @@
 
 > **[architecture.md](architecture.md)** — 설계 전체 조감도 해설 (여기부터 읽으면 된다)  
 > **[STRUCTURE.md](STRUCTURE.md)** — 파일 구조와 설계 원칙  
-> **[slides/](slides/)** — 발표용 16:9 슬라이드 6장  
+> **[slides/deck/](slides/deck/)** — 발표용 16:9 슬라이드 6장  
 ---
 
 ## 빠른 시작
