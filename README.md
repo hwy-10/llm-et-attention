@@ -226,6 +226,109 @@ pytest -q                            # pytest 가 있으면 이쪽도 가능
 
 ---
 
+## 블록별 검증 분담
+
+[architecture.md §3](architecture.md) 의 블록도(조감도 2열)와 코드의 대응이다.
+**블록 경계가 모듈 경계와 거의 일치하므로, 블록대로 나누면 검증 범위가 겹치지 않는다.**
+
+| 블록도 | 코드 | 핵심 함수 |
+|---|---|---|
+| **비트평면 BRAM** | [src/memory.py](src/memory.py) · [src/schedule.py](src/schedule.py) · [src/quantize.py](src/quantize.py) | `word_reads_scattered()` `account_step()` `apply()` `to_bitplanes()` |
+| **부분 내적 · 누산** | [src/masked_sum.py](src/masked_sum.py) · [src/accumulator.py](src/accumulator.py) | `partial_dots()` `AdderTreeModel` `accumulate()` `fold_and_quantize_query()` |
+| **Q+ / Q− 레지스터** | [src/bounds.py](src/bounds.py) | `StepBounds` `.r(m)` `.l_offset(m)` `verify_bracket()` |
+| **종단 판정** | [src/terminator.py](src/terminator.py) · [src/threshold.py](src/threshold.py) | `run_step()` `ThetaPolicy` `ThetaTracker` |
+| **★ 읽기 요청 차단** (붉은 화살표) | 두 그룹의 **접합부** — 아래 참조 | `read_live` |
+
+---
+
+### 그룹 1 — Q 레지스터 + 종단 판정 · 402줄
+
+```
+src/bounds.py        104줄   Q+/Q− 에서 R_m, L_m 을 만든다
+src/threshold.py     143줄   θ 정책 4종 + margin 정규화 4종
+src/terminator.py    155줄   평면 루프, 판정, 판정 지연, keep-top-k 가드
+tests/test_bounds.py  87줄
+```
+
+**확인할 것**
+
+* `L_m ≤ s ≤ S_m + R_m` 이 성립하는 근거를 코드 없이 유도한 뒤 코드와 대조
+* Q+/Q− 가 **스텝당 1회만** 계산되는지 (매 평면 재계산하면 회로 논거가 무너진다)
+* θ 정책 4종의 무손실성 판정. 특히 **`prev_step` 이 왜 손실인지**
+* [terminator.py:116-124](src/terminator.py#L116-L124) 의 keep-top-k 가드 — 한 번 잘못 구현됐던 자리다
+  (전부-아니면-전무로 건너뛰어 margin 이 안 먹었음)
+* `decision_latency_planes` 가 `read_live` 에 반영되는 지점
+
+### 그룹 2 — 부분 내적 + 비트평면 BRAM · 791줄
+
+```
+src/quantize.py      145줄   비트평면 저장 형식, 자리값
+src/masked_sum.py    156줄   P_b (곱셈 없는 조건부 덧셈), 가산 트리 모델
+src/accumulator.py   138줄   S_m 시프트 누산, 스케일 폴딩, zero-point 보정
+src/memory.py        166줄   ★ 워드 단위 읽기 회계
+src/schedule.py      186줄   batch / compaction / two_phase
+tests/test_quantize.py · test_memory.py · test_schedule.py   287줄
+```
+
+**확인할 것**
+
+* `partial_dots()` 에 **곱셈이 정말 없는지** — 여기에 곱셈이 남아 있으면 DSP 논거가 무너진다
+* 스케일 폴딩이 per-channel 양자화와 곱셈기 없음을 **동시에** 지키는지
+* zero-point 보정항이 모든 토큰에 같은 상수인지 (순위 불변의 근거)
+* ★ **워드폭 표를 손으로 재계산** — 워드폭 32에서 batch 3.8% / compaction 26.6%
+* `accumulator_bits()` 의 누산기 폭이 오버플로 없이 충분한지
+
+> 그룹 2가 두 배 가까이 큽니다. 다만 `quantize`·`masked_sum` 은 짧고 단순하니,
+> 실제 무게는 **`memory` + `schedule` 회계**에 있습니다.
+
+---
+
+### ★ 접합부 — 두 그룹이 같이 봐야 하는 한 곳
+
+블록도의 **붉은 화살표**(종단 판정 → 비트평면 BRAM)가 코드에서는 배열 하나다.
+
+```
+terminator.run_step()  ──→  read_live  (n_planes × n_tokens, bool)  ──→  memory.account_step()
+        그룹 1                                                              schedule.apply()
+                                                                              그룹 2
+```
+
+**여기서 두 가지가 어긋나기 쉽다.**
+
+1. **판정 지연** — 평면 m 의 판정은 m 의 가산 트리가 끝나야 나온다. 그래서
+   `read_live[t] = live_history[t − latency]` 다. 그룹 1이 만들고 그룹 2가 절감으로
+   환산하므로, **한쪽만 보면 과대평가를 못 잡는다.**
+2. **단위** — `read_live` 는 토큰 마스크이고 `account_step()` 의 출력은 **BRAM 워드 수**다.
+   섞이면 모든 절감 수치가 무의미해진다.
+
+**양쪽이 같은 자리에 앉아 이 배열 하나만 30분 보는 것을 권한다.**
+
+---
+
+### 두 그룹 밖
+
+| 파일 | 성격 |
+|---|---|
+| [src/designs.py](src/designs.py) 151줄 | ①②③④ 통합 — 두 그룹 결과를 합치는 자리. **공동** |
+| [tests/test_designs.py](tests/test_designs.py) 125줄 | ①=②=③ 불변식. **공동** |
+| [src/decode_loop.py](src/decode_loop.py) 324줄 | 루프 (T 가 자란다) |
+| [src/dataset.py](src/dataset.py) · [model_hooks.py](src/model_hooks.py) · [seeding.py](src/seeding.py) 334줄 | ★ 입력 데이터 — 합성 파라미터가 결론을 좌우한다 |
+| [utils/cost_model.py](utils/cost_model.py) · [metrics.py](utils/metrics.py) 321줄 | 손익분기, 지표 |
+| [utils/hw_parser.py](utils/hw_parser.py) · [crosscheck.py](utils/crosscheck.py) 352줄 | RTL 실측 인터페이스 |
+| [src/config.py](src/config.py) · [utils/io.py](utils/io.py) 424줄 | 설정·저장. 미니 YAML 파서가 값을 잘못 읽으면 **조용히** 전부 틀린다 |
+| [utils/visualization.py](utils/visualization.py) 443줄 | 그림. 위험 낮음 — 눈으로 확인 |
+| [experiments/](experiments/) · [run_paper_experiments.py](run_paper_experiments.py) 1003줄 | 얇은 래퍼. 전원이 한 번씩 돌려 보는 것으로 갈음 |
+
+---
+
+### 검증 규칙
+
+* **순서** — 그룹 1의 상한식이 틀리면 그룹 2의 절감 검증은 무의미하다.
+  그룹 1이 `bounds.py` 만 먼저 끝내고 공유한 뒤 나머지를 진행할 것.
+* **산출물** — "읽었다"가 아니라 **반례를 찾으려 시도한 기록**. 못 찾았으면 그렇게 적는다.
+* **문서 대조** — 코드와 [architecture.md](architecture.md) 가 어긋나는 곳을 찾으면 그것도 결과다.
+  최근 §2 의 unsigned 전제가 정정되었으므로 그 주변을 특히 볼 것.
+
 ## 참고
 
 > 전체 조사는 **[related_work.md](related_work.md)** 에 있다.
