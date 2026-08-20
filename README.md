@@ -205,6 +205,20 @@ mock 은 소프트웨어 모델에서 생성한 것이라 항상 통과하며, �
 
 ---
 
+### Notion 연동 (선택)
+
+팀 Notion 을 Claude Code 에 붙이려면 `.mcp.json` 이 이미 준비돼 있다.
+**토큰은 파일에 넣지 말고** 환경변수로 준다 — 이 저장소는 공개되므로 커밋되면 즉시 유출된다.
+
+```powershell
+[Environment]::SetEnvironmentVariable('NOTION_TOKEN','<본인 토큰>','User')
+```
+
+설정 후 에디터를 완전히 재시작한다. Notion 쪽에서 해당 페이지에
+`··· → 연결` 로 통합을 열어줘야 내용이 보인다.
+
+---
+
 ## 테스트
 
 ```bash
