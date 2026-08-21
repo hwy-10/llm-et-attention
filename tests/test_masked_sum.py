@@ -125,14 +125,24 @@ def test_hardware_model_default_values():
 
     summary = model.summary()
 
+    # 트리 구조에서 유도되는 값 — 바뀌면 실제로 잘못된 것이다.
     assert summary["depth"] == 6
     assert summary["n_adders"] == 63
     assert summary["output_bits"] == 14
-    assert summary["est_lut_tree"] == 624.0
-    assert summary["est_lut_mask"] == 256.0
-    assert summary["est_lut_total"] == 880.0
     assert summary["uses_dsp"] is False
-    """head_dim=64, Query 8비트 조건에서 가산 트리의 깊이·가산기 수·출력 비트폭 및 LUT 추정 공식이 예상한 값을 반환하는지 검증했습니다."""
+
+    # 가산 트리의 총 가산 비트 수 624 도 구조에서 유도된다.
+    # 단별로 (가산기 수 x 가산기 폭) 을 더한 값: 288+160+88+48+26+14 = 624.
+    # lut_per_fa 로 나눠 계수와 무관하게 비교한다.
+    assert model.est_lut / model.lut_per_fa == 624
+
+    # est_lut_* 자체는 Vivado 실측으로 교체될 1차 추정이다 (masked_sum.py docstring).
+    # lut_per_fa=1.0 과 "6-LUT 가 2비트 처리" 는 가정이므로 값을 못박지 않고
+    # 성질만 본다 — 못박으면 실측 반영이 곧 테스트 실패가 된다.
+    assert summary["est_lut_mask"] > 0
+    assert summary["est_lut_total"] > summary["est_lut_tree"]
+    """head_dim=64, Query 8비트 조건에서 가산 트리의 깊이·가산기 수·출력 비트폭·총 가산 비트가
+    예상한 값을 반환하는지 검증했습니다. LUT 추정치는 가정에 의존하므로 성질만 확인합니다."""
 
 
 def test_baseline_and_accumulator_width():
