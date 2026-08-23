@@ -29,7 +29,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from .quantize import KeyQuant, N_PLANES, plane_weights, quantize_query
+from .quantize import KeyQuant, N_PLANES, quantize_query
 
 
 @dataclass(frozen=True)
@@ -84,8 +84,13 @@ def accumulate(partials: np.ndarray, m: int | None = None) -> np.ndarray:
     m = n if m is None else int(m)
     if m <= 0:
         return np.zeros(p.shape[1:], dtype=np.int64)
-    w = plane_weights(n)[:m]
-    return np.tensordot(w, p[:m].astype(np.int64), axes=(0, 0))
+    out = np.zeros(p.shape[1:], dtype=np.int64)
+    p64 = p.astype(np.int64)
+    for plane in range(n):
+        out <<= 1
+        if plane < m:
+            out += p64[plane]
+    return out
 
 
 def cumulative_accumulate(partials: np.ndarray) -> np.ndarray:
@@ -95,10 +100,11 @@ def cumulative_accumulate(partials: np.ndarray) -> np.ndarray:
     """
     p = np.asarray(partials, dtype=np.int64)
     n = p.shape[0]
-    w = plane_weights(n).reshape((n,) + (1,) * (p.ndim - 1))
-    weighted = p * w
     out = np.zeros((n + 1,) + p.shape[1:], dtype=np.int64)
-    np.cumsum(weighted, axis=0, out=out[1:])
+    running = np.zeros(p.shape[1:], dtype=np.int64)
+    for plane in range(n):
+        running = (running << 1) + p[plane]
+        out[plane + 1] = running << (n - plane - 1)
     return out
 
 
