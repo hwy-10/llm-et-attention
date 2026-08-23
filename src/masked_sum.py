@@ -24,6 +24,24 @@ from .quantize import N_PLANES
 # ---------------------------------------------------------------------------
 # 수치 계산
 # ---------------------------------------------------------------------------
+def _masked_sum(q: np.ndarray, kp: np.ndarray) -> np.ndarray:
+    """Key 비트가 1인 위치의 q 값을 선택한 뒤 head_dim 방향으로 합산한다."""
+    out = np.empty(
+        (kp.shape[0], q.shape[0], kp.shape[1]),
+        dtype=np.int32,
+    )
+
+    for plane in range(kp.shape[0]):
+        for step in range(q.shape[0]):
+            out[plane, step] = np.where(
+                kp[plane] == 1,
+                q[step],
+                0,
+            ).sum(axis=-1, dtype=np.int32)
+
+    return out
+
+
 def partial_dots(
     q_stored: np.ndarray,
     k_planes: np.ndarray,
@@ -53,11 +71,11 @@ def partial_dots(
         raise ValueError(f"head_dim mismatch: q={q.shape[-1]}, k_planes={kp.shape[-1]}")
 
     if not chunk or chunk >= kp.shape[1]:
-        return np.einsum("sd,btd->bst", q, kp.astype(np.int32), optimize=True)
+        return _masked_sum(q, kp)
 
     outs = [
-        np.einsum("sd,btd->bst", q, kp[:, s : s + chunk, :].astype(np.int32), optimize=True)
-        for s in range(0, kp.shape[1], chunk)
+        _masked_sum(q, kp[:, start : start + chunk, :])
+        for start in range(0, kp.shape[1], chunk)
     ]
     return np.concatenate(outs, axis=-1)
 
@@ -96,6 +114,11 @@ class AdderTreeModel:
     def output_bits(self) -> int:
         """부호 있는 d개 합의 비트폭."""
         return self.input_bits + self.depth
+
+    @property
+    def fully_pipelined_latency_cycles(self) -> int:
+        """가산 트리의 모든 단계가 파이프라인된 경우의 예상 지연 시간."""
+        return self.depth
 
     @property
     def est_lut(self) -> float:
@@ -152,5 +175,5 @@ def accumulator_bits(head_dim: int, q_bits: int = 8, n_planes: int = N_PLANES) -
 
     최대 |s| = (2^n_planes − 1) · (2^(q_bits−1) − 1) · head_dim
     """
-    max_abs = ((1 << n_planes) - 1) * ((1 << (q_bits - 1)) - 1) * head_dim
+    max_abs = ((1 << n_planes) - 1) * (1 << (q_bits - 1)) * head_dim
     return int(math.ceil(math.log2(max_abs + 1))) + 1  # +1 = 부호
