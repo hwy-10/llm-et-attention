@@ -179,6 +179,7 @@ $$\text{KV Cache Size} = 2 \times L \times H_{KV} \times d \times T \times B_{\t
 > 원본 데이터는 메모리에 그대로 보존하므로 정확도 손실이 없으며, 불필요한 메모리 읽기(DRAM 트래픽)만 대폭 줄여 추론 속도를 획기적으로 개선한다.
 > 
 (상세 수학적 증명 및 하드웨어 구조는 [architecture.md §3](../../architecture.md) 참조)
+
 ---
 
 ## 8. 용어 대조표
