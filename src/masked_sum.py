@@ -173,7 +173,7 @@ class BaselineMacModel:
 def accumulator_bits(head_dim: int, q_bits: int = 8, n_planes: int = N_PLANES) -> int:
     """시프트 누산기의 비트폭.
 
-    최대 |s| = (2^n_planes − 1) · (2^(q_bits−1) − 1) · head_dim
+    최대 |s| = (2^n_planes − 1) · (2^(q_bits − 1) · head_dim
     """
     max_abs = ((1 << n_planes) - 1) * (1 << (q_bits - 1)) * head_dim
     return int(math.ceil(math.log2(max_abs + 1))) + 1  # +1 = 부호
