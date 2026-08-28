@@ -13,7 +13,7 @@
       남는 비트의 자리값은 전부 양수다. 따라서 signed 에서도 유효한 bound 를 세울 수
       있고, PADE(HPCA 2026)/BitStopper 가 2의 보수에서 그렇게 유도한다.
       unsigned 는 평면 0의 부호 특수처리와 양방향 구간 로직을 없애는 회로 단순화이지
-      수학적 필연이 아니다.  자세한 것은 related_work.md 참조.
+      수학적 필연이 아니다.  자세한 것은 docs/related_work.md 참조.
 
   q : 대칭 signed 8비트.  q ∈ [−127, 127]
 
@@ -70,6 +70,13 @@ def quantize_key(
     k = np.asarray(k, dtype=np.float64)
     if k.ndim != 2:
         raise ValueError(f"k must be (n_tokens, head_dim), got {k.shape}")
+
+    # NaN / inf 는 clip 을 그대로 통과해 stored 가 전부 0 이 된다.
+    # 범위 검사(0..255)는 멀쩡해 보이는데 값만 사라지므로 여기서 막는다.
+    if not np.all(np.isfinite(k)):
+        n_bad = int((~np.isfinite(k)).sum())
+        raise ValueError(f"k has {n_bad} non-finite value(s); NaN/inf quantize to 0 silently")
+
     qmax = (1 << bits) - 1
 
     axis = 0 if granularity == "per_channel" else None
@@ -115,24 +122,46 @@ def quantize_query(q: np.ndarray, bits: int = 8, granularity: str = "per_token")
 def to_bitplanes(stored: np.ndarray, n_planes: int = N_PLANES) -> np.ndarray:
     """unsigned 정수 -> 비트평면.
 
-    (n_tokens, head_dim) -> (n_planes, n_tokens, head_dim) uint8
-    ★ 첫 축 index 0 = MSB (b7), index 7 = LSB (b0) — MSB 우선 순서로 저장한다.
+    (...) -> (n_planes, ...) uint8.  입력 차원은 몇 이어도 된다.
+    ★ 첫 축 index 0 = MSB (b7), index -1 = LSB (b0) — MSB 우선 순서로 저장한다.
       이렇게 두면 "평면 m 만 읽기"가 곧 배열의 앞쪽 슬라이스가 된다.
     """
-    u = np.asarray(stored, dtype=np.uint16)
-    shifts = np.arange(n_planes - 1, -1, -1, dtype=np.uint16)  # MSB first
-    return ((u[None, ...] >> shifts[:, None, None]) & 1).astype(np.uint8)
+    u = np.asarray(stored)
+
+    # 실수를 받으면 예전에는 uint16 캐스트가 소수점을 조용히 버렸다 (3.7 -> 3)
+    if not np.issubdtype(u.dtype, np.integer):
+        raise ValueError(f"stored must be an integer array, got dtype {u.dtype}")
+
+    # 담기지 않는 값은 조용히 잘린다 (256 -> 0, -1 -> 255).
+    # 왕복이 무손실인 구간은 0 .. 2^n_planes-1 뿐이므로 벗어나면 막는다.
+    lo, hi = int(u.min()) if u.size else 0, int(u.max()) if u.size else 0
+    limit = (1 << n_planes) - 1
+    if lo < 0 or hi > limit:
+        raise ValueError(
+            f"stored must be in [0, {limit}] for {n_planes} planes, got [{lo}, {hi}]"
+        )
+
+    # uint16 으로 캐스트하지 않는다. 위 가드는 2^n_planes-1 까지 허용하는데
+    # uint16 은 65535 에서 잘려, n_planes > 16 이면 가드를 통과한 값이 사라졌다.
+    shifts = np.arange(n_planes - 1, -1, -1, dtype=np.int64)   # MSB first
+    shifts = shifts.reshape((n_planes,) + (1,) * u.ndim)       # 차원에 맞춰 편다
+    return ((u[None, ...] >> shifts) & 1).astype(np.uint8)
 
 
 def plane_weights(n_planes: int = N_PLANES) -> np.ndarray:
     """MSB 우선 순서에 대응하는 자리값. [128, 64, ..., 1] — 전부 양수."""
-    return (1 << np.arange(n_planes - 1, -1, -1, dtype=np.int64)).astype(np.int64)
+    return 1 << np.arange(n_planes - 1, -1, -1, dtype=np.int64)
 
 
-def from_bitplanes(planes: np.ndarray) -> np.ndarray:
-    """to_bitplanes 의 역변환. 무손실이어야 한다."""
+def from_bitplanes(planes: np.ndarray, dtype=np.int64) -> np.ndarray:
+    """to_bitplanes 의 역변환. 무손실이어야 한다.
+
+    dtype 기본값이 int64 인 것은 취향이 아니다. 좁은 타입을 기본으로 두면
+    n_planes > 8 에서 예외 없이 값이 잘린다 (4095 -> 255). 아래쪽 경로가
+    전부 int64 정수 연산이라 여기만 좁으면 그 사슬이 끊긴다.
+    """
     w = plane_weights(planes.shape[0])
-    return np.tensordot(w, planes.astype(np.int64), axes=(0, 0))
+    return np.tensordot(w, planes.astype(np.int64), axes=(0, 0)).astype(dtype)
 
 
 def remaining_scale(m: int, n_planes: int = N_PLANES) -> int:
@@ -142,4 +171,7 @@ def remaining_scale(m: int, n_planes: int = N_PLANES) -> int:
 
     가이드 5.4절의 (2^(8-m) − 1) 계수.
     """
+    # m=-1 은 511(평면 9개분)을 조용히 내고, m=9 는 시프트 오류만 낸다
+    if not 0 <= m <= n_planes:
+        raise ValueError(f"m = {m}: must be in [0, {n_planes}] (planes processed so far)")
     return (1 << (n_planes - m)) - 1

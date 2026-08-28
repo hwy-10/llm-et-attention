@@ -64,7 +64,7 @@ def test_bracket_holds_everywhere():
                 hi = cum[m, s] + b.r(m)
                 n_checked += T
                 n_violations += int(np.sum((exact[s] < lo) | (exact[s] > hi)))
-    assert n_violations == 0, f"{n_violations}/{n_checked} 케이스에서 상하한이 깨졌다"
+    assert n_violations == 0, f"bounds violated in {n_violations}/{n_checked} cases"
 
 
 def test_bracket_tightens_monotonically():
@@ -73,7 +73,7 @@ def test_bracket_tightens_monotonically():
     b = step_bounds(fq.stored[0])
     widths = [b.width(m) for m in range(9)]
     assert all(widths[i] > widths[i + 1] for i in range(8)), widths
-    assert widths[-1] == 0, "전 평면 처리 후 불확실성은 0 이어야 한다"
+    assert widths[-1] == 0, "uncertainty must be 0 after all planes are processed"
 
 
 def test_bracket_exact_at_full_planes():

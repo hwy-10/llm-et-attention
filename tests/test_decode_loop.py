@@ -24,7 +24,7 @@ def test_context_grows_across_steps():
     wb = _wb()
     assert wb.step_tokens[0] == 16
     assert wb.step_tokens[-1] == 191
-    assert np.all(np.diff(wb.step_tokens) > 0), "문맥이 스텝마다 자라야 한다"
+    assert np.all(np.diff(wb.step_tokens) > 0), "context must grow at every step"
 
 
 def test_baseline_and_seq_are_lossless():
@@ -44,7 +44,7 @@ def test_exact_mode_preserves_topk_across_whole_loop():
             r = run_decode(wb, design="exact", top_k=top_k, sched=SCHED, bram=BRAM,
                            eval_top_k=(top_k,), keep_trace=False)
             assert r.summary[f"top{top_k}_retention"] == 1.0, (
-                f"seed={seed} k={top_k}: 정확 모드가 top-k 를 잃었다"
+                f"seed={seed} k={top_k}: exact mode lost top-k"
             )
 
 
@@ -70,7 +70,7 @@ def test_margin_increases_savings():
         r = run_decode(wb, design="approx", top_k=8, margin=margin,
                        sched=SCHED, bram=BRAM, keep_trace=False)
         cur = r.summary["read_saving_ideal"]
-        assert cur >= prev - 1e-9, f"margin={margin} 에서 절감이 줄었다"
+        assert cur >= prev - 1e-9, f"savings dropped at margin={margin}"
         prev = cur
 
 
@@ -80,7 +80,7 @@ def test_sound_theta_policies_are_lossless():
     for pol in ("every_plane", "once_at_m", "oracle_fixed"):
         r = run_decode(wb, design="exact", top_k=8, theta_policy=pol, once_at_m=2,
                        sched=SCHED, bram=BRAM, keep_trace=False)
-        assert r.summary["top8_retention"] == 1.0, f"{pol} 에서 top-k 손실 발생"
+        assert r.summary["top8_retention"] == 1.0, f"top-k loss under policy {pol}"
 
 
 def test_prev_step_policy_is_not_sound():
@@ -94,9 +94,9 @@ def test_prev_step_policy_is_not_sound():
     r = run_decode(wb, design="exact", top_k=8, theta_policy="prev_step",
                    sched=SCHED, bram=BRAM, keep_trace=False)
     ret = r.summary["top8_retention"]
-    assert ret < 1.0, "prev_step 이 무손실로 나왔다면 테스트 조건을 다시 볼 것"
+    assert ret < 1.0, "prev_step came out lossless; re-check the test setup"
     # 다만 손실이 파괴적이어서는 안 된다 (실용성이 남아 있는지 확인)
-    assert ret > 0.5, f"prev_step 손실이 너무 크다: top8_retention={ret:.3f}"
+    assert ret > 0.5, f"prev_step loss too large: top8_retention={ret:.3f}"
     # 대신 종단은 더 일찍 일어나야 한다 (평면 0부터 판정 가능)
     ref = run_decode(wb, design="exact", top_k=8, theta_policy="every_plane",
                      sched=SCHED, bram=BRAM, keep_trace=False)

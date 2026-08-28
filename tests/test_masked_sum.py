@@ -155,3 +155,67 @@ def test_baseline_and_accumulator_width():
     assert baseline.summary()["uses_dsp"] is True
     assert accumulator_bits(head_dim=64) == 22
     """32개 PE, 1 DSP/PE 조건에서 기준 설계의 DSP 수와 누산기 비트폭이 예상한 값을 반환하는지 검증했습니다."""
+
+
+def test_partial_dots_is_select_and_add_not_multiply():
+    """★ "곱셈이 없다" 를 의미로 못박는다 — 구현은 einsum 이어도 좋다.
+
+    einsum 은 빠르지만 코드만 보면 곱셈으로 읽힌다. 그래서 "비트가 1이면 q 를 고르고
+    0이면 0을 고른 뒤 더한다" 는 정의를 따로 계산해 두 값이 같은지 본다.
+
+    구현을 마스킹으로 바꾸지 않은 이유는 규모다. 실제 워크로드(8평면 x 480스텝 x
+    512토큰 x 64차원)에서 마스킹 판은 중간 배열이 **0.5 GB** 로 지금(7.9 MB)의 64배가
+    되고 4배 느리다. 값은 같으므로 빠른 쪽을 두고 의미를 검사로 지킨다.
+    """
+    rng = np.random.default_rng(0)
+    for shape in ((3, 5, 4), (1, 1, 8), (8, 7, 16)):
+        n_planes, n_tokens, head_dim = shape
+        q = rng.integers(-127, 128, size=(4, head_dim)).astype(np.int32)
+        kp = rng.integers(0, 2, size=shape).astype(np.uint8)
+
+        # 정의 그대로: 비트가 1인 자리의 q 만 골라 더한다. 곱셈이 한 번도 안 나온다
+        select_add = np.where(kp[:, None, :, :] == 1, q[None, :, None, :], 0)
+        want = select_add.sum(axis=-1, dtype=np.int32)
+
+        np.testing.assert_array_equal(partial_dots(q, kp), want)
+
+    # 비트가 0/1 이 아니면 위 동치가 깨진다 — 전제를 같이 못박는다
+    kp2 = np.array([[[2, 0]]], dtype=np.uint8)
+    q2 = np.array([[3, 5]], dtype=np.int32)
+    assert int(partial_dots(q2, kp2)[0, 0, 0]) == 6      # einsum 은 곱한다
+    assert int(np.where(kp2[:, None] == 1, q2[None, :, None], 0).sum()) == 0
+
+
+def test_accumulator_width_holds_the_true_worst_case():
+    """★ 누산기 폭이 최악값을 실제로 담는지 — 식이 아니라 범위로 확인.
+
+    q 의 최악값은 +127 이 아니라 -128 이다. 폭 계산이 그쪽을 빠뜨리면 조용히 한 비트
+    모자란 값이 나온다.
+    """
+    # q_bits 가 작을수록 -2^(b-1) 과 +2^(b-1)-1 의 차이가 커진다.
+    # 2 를 빼면 두 식이 같은 값을 내 이 검사가 판별력을 잃는다 (실제로 그랬다).
+    for head_dim in (1, 8, 32, 64, 128):
+        for q_bits in (2, 3, 4, 8, 12):
+            for n_planes in (1, 4, 8, 12):
+                bits = accumulator_bits(head_dim, q_bits=q_bits, n_planes=n_planes)
+
+                k_max = (1 << n_planes) - 1          # unsigned K 의 최댓값
+                lo = -k_max * (1 << (q_bits - 1)) * head_dim     # q = -2^(b-1)
+                hi = k_max * ((1 << (q_bits - 1)) - 1) * head_dim
+
+                assert -(1 << (bits - 1)) <= lo, (head_dim, q_bits, n_planes, bits, lo)
+                assert hi <= (1 << (bits - 1)) - 1, (head_dim, q_bits, n_planes, bits, hi)
+
+                # 헐렁하지도 않아야 한다. 다만 식이 log2 올림이라 모서리에서 1비트
+                # 여유가 생기므로(head_dim=1, q_bits=2) 최소폭+1 까지만 허용한다.
+                minimal = next(b for b in range(2, 128)
+                               if -(1 << (b - 1)) <= lo and hi <= (1 << (b - 1)) - 1)
+                assert bits <= minimal + 1, (head_dim, q_bits, n_planes, bits, minimal)
+
+
+def test_adder_tree_pipelined_latency_is_the_depth():
+    """완전 파이프라인 지연 = 트리 깊이. head_dim 64 에서 6 사이클."""
+    assert AdderTreeModel(n_inputs=64).fully_pipelined_latency_cycles == 6
+    for n in (2, 4, 8, 16, 32, 64, 128):
+        m = AdderTreeModel(n_inputs=n)
+        assert m.fully_pipelined_latency_cycles == m.depth

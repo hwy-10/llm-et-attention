@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import importlib.util
 import inspect
+import re
 import shutil
 import sys
 import tempfile
@@ -48,11 +49,14 @@ class _Raises:
 
     def __exit__(self, et, ev, tb):
         if et is None:
-            raise AssertionError(f"{self.exc.__name__} 이 발생하지 않았다")
+            raise AssertionError(f"{self.exc.__name__} was not raised")
         if not issubclass(et, self.exc):
             return False
-        if self.match and self.match not in str(ev):
-            raise AssertionError(f"메시지에 {self.match!r} 가 없다: {ev}")
+        # pytest 의 match= 는 부분문자열이 아니라 re.search 다.
+        # 부분문자열로 두면 r"\[0, 255\]" 같은 패턴이 pytest 에서는 통과하고
+        # 여기서만 실패한다 — 러너에 따라 결과가 갈리면 어느 쪽도 못 믿는다.
+        if self.match and not re.search(self.match, str(ev)):
+            raise AssertionError(f"message does not match {self.match!r}: {ev}")
         return True
 
 

@@ -90,4 +90,10 @@ schedule:
   batch_size: 32            # "일괄 처리" 정책의 묶음 크기
   two_phase_split: 3        # "2단계 처리": 1단계에서 스캔할 평면 수
   compaction_cost_cycles: 2 # 작업 압축의 사이클 오버헤드 (평면당)
+  # ★ 연산과 BRAM 읽기가 겹치는가 ★
+  #   true  : 완전 중첩 -> total = max(연산, 메모리)   낙관적
+  #   false : 중첩 없음 -> total = 연산 + 메모리       보수적
+  # 메모리 사이클은 ceil(words_bram / n_bram_ports) 로 계산한다.
+  # 어느 쪽인지는 RTL 시뮬레이션으로 확정할 것 — 결론이 뒤집히는지 양쪽 다 볼 것.
+  mem_overlap: true
   source: "estimate"

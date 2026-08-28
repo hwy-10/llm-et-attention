@@ -98,6 +98,15 @@ class AdderTreeModel:
         return self.input_bits + self.depth
 
     @property
+    def fully_pipelined_latency_cycles(self) -> int:
+        """단마다 레지스터를 넣었을 때의 지연. 깊이와 같은 수지만 뜻이 다르다.
+
+        depth 는 조합 임계 경로의 단수이고 이것은 결과가 나오기까지의 사이클이다.
+        실제 값은 레지스터 배치에 달렸으므로 합성 결과로 확정할 것.
+        """
+        return self.depth
+
+    @property
     def est_lut(self) -> float:
         """가산 트리 하나의 LUT 추정.
 
@@ -150,7 +159,10 @@ class BaselineMacModel:
 def accumulator_bits(head_dim: int, q_bits: int = 8, n_planes: int = N_PLANES) -> int:
     """시프트 누산기의 비트폭.
 
-    최대 |s| = (2^n_planes − 1) · (2^(q_bits−1) − 1) · head_dim
+    최대 |s| = (2^n_planes − 1) · 2^(q_bits−1) · head_dim
+
+    q 의 최악값은 +127 이 아니라 −128 이다. 두 식이 지금 설정에서 같은 폭을 내지만
+    유도는 실제 최악값을 써야 한다.
     """
-    max_abs = ((1 << n_planes) - 1) * ((1 << (q_bits - 1)) - 1) * head_dim
+    max_abs = ((1 << n_planes) - 1) * (1 << (q_bits - 1)) * head_dim
     return int(math.ceil(math.log2(max_abs + 1))) + 1  # +1 = 부호

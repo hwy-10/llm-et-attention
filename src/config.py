@@ -7,9 +7,12 @@ config/*.yaml 은 매핑 / 리스트 / 스칼라만 사용하므로 서브셋 �
 
 from __future__ import annotations
 
+import dataclasses
+import difflib
 import hashlib
 import json
 import re
+import warnings
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -218,3 +221,106 @@ class Config:
 def load_config(config_dir: str | Path | None = None) -> Config:
     d = Path(config_dir) if config_dir else CONFIG_DIR
     return Config(**{name: load_yaml(d / f"{name}.yaml") for name in CONFIG_FILES})
+
+
+# 설정 -> dataclass 배선
+# yaml 값이 dataclass 기본값과 전부 같아 파싱이 실패해도 숫자가 안 변한다.
+# 기본값으로 흘러내릴 때마다 경고를 남기는 이유다.
+
+
+class ConfigDefaultWarning(UserWarning):
+    """설정 항목이 없어 기본값을 대신 썼다."""
+
+
+def as_bool(raw: Any) -> bool:
+    """yaml 의 참/거짓."""
+
+    # bool("false") == True 사고를 막는다
+    if isinstance(raw, bool):
+        return raw
+    if isinstance(raw, str):
+        low = raw.strip().lower()
+        if low in ("true", "yes", "on", "1"):
+            return True
+        if low in ("false", "no", "off", "0"):
+            return False
+    if isinstance(raw, int):
+        return bool(raw)
+    raise ValueError(f"{raw!r} is not a boolean (use true / false)")
+
+
+# 배선표 한 줄 = (dataclass 필드, yaml 점표기, 변환 함수)
+Wiring = tuple[tuple[str, str, Any], ...]
+
+
+def read_fields(cfg: Config, cls: type, wiring: Wiring) -> dict[str, Any]:
+    """배선표대로 cfg 에서 값을 뽑아 cls(**...) 에 넣을 dict 를 만든다."""
+
+    # 기본값은 dataclass 에서 가져온다 — 두 군데 적으면 언젠가 어긋난다
+    defaults = cls()
+    out: dict[str, Any] = {}
+    seen: dict[str, dict] = {}
+
+    for fname, dotted, cast in wiring:
+        sec_path, _, key = dotted.rpartition(".")
+
+        if sec_path not in seen:
+            node = cfg.get(sec_path)
+            if not isinstance(node, dict) or not node:
+                missing = sorted(
+                    d.rpartition(".")[2] for _f, d, _c in wiring
+                    if d.rpartition(".")[0] == sec_path
+                )
+                warnings.warn(
+                    ConfigDefaultWarning(
+                        f"{cls.__name__}: config section '{sec_path}' is missing or "
+                        f"empty; falling back to defaults for {missing}. "
+                        f"Check config/{sec_path.split('.')[0]}.yaml."
+                    ),
+                    stacklevel=3,
+                )
+                node = {}
+            seen[sec_path] = node
+
+        node = seen[sec_path]
+        default = getattr(defaults, fname)
+
+        if key in node:
+            raw = node[key]
+            try:
+                out[fname] = cast(raw)
+            except (TypeError, ValueError) as exc:
+                raise ValueError(
+                    f"{dotted} = {raw!r} cannot be used for "
+                    f"{cls.__name__}.{fname}: {exc}"
+                ) from exc
+            continue
+
+        if node:  # 섹션은 있는데 이 키만 없다 -> 오타일 가능성이 높다
+            near = difflib.get_close_matches(key, list(node), n=3, cutoff=0.6)
+            hint = (f"did you mean '{near[0]}'?" if near
+                    else f"keys present in this section: {sorted(node)}")
+            warnings.warn(
+                ConfigDefaultWarning(
+                    f"{cls.__name__}.{fname}: '{dotted}' is missing; "
+                    f"falling back to default {default!r}. {hint}"
+                ),
+                stacklevel=3,
+            )
+        out[fname] = default
+
+    return out
+
+
+def apply_overrides(obj: Any, overrides: dict[str, Any]) -> Any:
+    """replace(obj, **overrides) — 오타면 쓸 수 있는 항목을 알려 준다."""
+
+    if not overrides:
+        return obj
+    valid = {f.name for f in dataclasses.fields(obj)}
+    bad = sorted(set(overrides) - valid)
+    if bad:
+        raise TypeError(
+            f"{type(obj).__name__} has no field {bad}; valid fields: {sorted(valid)}"
+        )
+    return dataclasses.replace(obj, **overrides)

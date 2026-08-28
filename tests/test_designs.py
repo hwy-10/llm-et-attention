@@ -62,7 +62,7 @@ def test_exact_mode_preserves_topk():
             true_top = set(topk_indices(exact.astype(np.float64), top_k).tolist())
             survivors = set(np.flatnonzero(r.alive).tolist())
             assert true_top <= survivors, (
-                f"seed={seed} k={top_k}: 참 top-k 중 {true_top - survivors} 가 종단됐다"
+                f"seed={seed} k={top_k}: {true_top - survivors} of the true top-k were terminated"
             )
 
 
@@ -102,7 +102,7 @@ def test_larger_margin_terminates_more():
         r = run_design("approx", p, b, top_k=8, margin=margin, sched=SCHED, bram=BRAM)
         cur = r.mean_term_plane
         if prev is not None:
-            assert cur <= prev + 1e-9, f"margin={margin} 에서 종단이 오히려 늦어졌다"
+            assert cur <= prev + 1e-9, f"termination got later at margin={margin}"
         prev = cur
 
 

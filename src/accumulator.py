@@ -29,7 +29,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from .quantize import KeyQuant, N_PLANES, plane_weights, quantize_query
+from .quantize import KeyQuant, N_PLANES, quantize_query
 
 
 @dataclass(frozen=True)
@@ -52,6 +52,11 @@ def fold_and_quantize_query(
     granularity: str = "per_token",
 ) -> FoldedQuery:
     """K 의 scale 을 q 에 접어 넣고 대칭 양자화한다.
+
+    ★ "곱셈기 없음" 은 **토큰마다 반복되는 부분 내적 구간**에 대한 주장이다.
+    여기의 q_real * sc 와 zero-point 보정에는 곱셈이 남아 있지만, 스텝당 한 번뿐이고
+    토큰 수에 비례하지 않는다. 반복되는 쪽(masked_sum -> accumulate)이 마스킹과
+    시프트 누산으로만 되어 있다는 것이 논거다.
 
     Parameters
     ----------
@@ -82,10 +87,20 @@ def accumulate(partials: np.ndarray, m: int | None = None) -> np.ndarray:
     p = np.asarray(partials)
     n = p.shape[0]
     m = n if m is None else int(m)
+
+    # m 이 평면 수보다 크면 조용히 n 으로 잘려 "다 처리했다"와 구분이 안 된다
+    if m > n:
+        raise ValueError(f"m = {m}: only {n} planes were given")
     if m <= 0:
         return np.zeros(p.shape[1:], dtype=np.int64)
-    w = plane_weights(n)[:m]
-    return np.tensordot(w, p[:m].astype(np.int64), axes=(0, 0))
+    # 시프트 누산 그대로 — 하드웨어가 하는 일을 코드도 그대로 한다.
+    # tensordot 은 자리값을 곱했다. 값은 같지만 곱셈기가 없다는 주장과 어긋난다.
+    out = np.zeros(p.shape[1:], dtype=np.int64)
+    for b in range(n):
+        out <<= 1                       # 자리 하나 올린다
+        if b < m:
+            out += p[b].astype(np.int64)
+    return out
 
 
 def cumulative_accumulate(partials: np.ndarray) -> np.ndarray:
@@ -95,10 +110,13 @@ def cumulative_accumulate(partials: np.ndarray) -> np.ndarray:
     """
     p = np.asarray(partials, dtype=np.int64)
     n = p.shape[0]
-    w = plane_weights(n).reshape((n,) + (1,) * (p.ndim - 1))
-    weighted = p * w
+
+    # accumulate() 와 같은 시프트 누산. 매 평면의 중간값을 남은 자리만큼 올려 둔다.
     out = np.zeros((n + 1,) + p.shape[1:], dtype=np.int64)
-    np.cumsum(weighted, axis=0, out=out[1:])
+    running = np.zeros(p.shape[1:], dtype=np.int64)
+    for b in range(n):
+        running = (running << 1) + p[b]
+        out[b + 1] = running << (n - b - 1)
     return out
 
 
@@ -121,6 +139,13 @@ def to_real_scores(
     corr = np.asarray(fq.zp_correction, dtype=np.float64)
     scale = np.asarray(fq.scale, dtype=np.float64).reshape(-1)
     if s.ndim == 1:
+        # 1차원은 어느 스텝인지 알 수 없어 늘 0번 스텝의 보정·스케일을 썼다.
+        # 스텝이 여러 개면 0번을 뺀 나머지가 전부 조용히 틀린 값이 된다.
+        if corr.size != 1:
+            raise ValueError(
+                f"s_int is 1-D but fq holds {corr.size} steps; "
+                "pass the full (n_steps, n_tokens) array so each step keeps its own scale"
+            )
         out = (s - corr.reshape(-1)[0]) * scale[0]
     else:
         out = (s - corr[:, None]) * scale[:, None]

@@ -26,18 +26,32 @@ from dataclasses import dataclass
 
 import numpy as np
 
+from .config import read_fields
+
+
+def _ceil_div(a: int, b: int, *, what: str = "나눌 폭") -> int:
+    # a = 세는 값(토큰·워드), b = 한 번에 처리하는 폭
+    # 0 을 돌려주면 잘못된 설정이 "읽기 0" 으로 조용히 묻힌다
+    if b <= 0:
+        raise ValueError(f"{what} = {b}: must be >= 1 (tried to divide {a})")
+    if a < 0:
+        raise ValueError(f"count = {a}: must not be negative ({what} = {b})")
+    return -(-int(a) // int(b))   # 정수 연산 — float 반올림을 안 탄다
+
 
 @dataclass(frozen=True)
 class BramSpec:
     """비트평면 BRAM 구성."""
 
     word_tokens: int = 32       # 한 워드에 담기는 토큰 수 (평면 1개 기준)
+    # 워드 하나의 물리 폭. bits_read 를 만들 때만 쓴다.
+    # 토큰 하나가 평면당 1비트이므로 word_bits >= word_tokens 여야 뜻이 선다.
     word_bits: int = 32
     n_ports: int = 2
     decision_latency_planes: int = 1
 
     def n_words(self, n_tokens: int) -> int:
-        return int(np.ceil(n_tokens / self.word_tokens))
+        return _ceil_div(n_tokens, self.word_tokens, what="word_tokens")
 
 
 def word_reads_scattered(live_row: np.ndarray, word_tokens: int) -> int:
@@ -46,6 +60,17 @@ def word_reads_scattered(live_row: np.ndarray, word_tokens: int) -> int:
     워드 안에 살아있는 토큰이 하나라도 있으면 그 워드를 읽는다.
     """
     live = np.asarray(live_row, dtype=bool)
+
+    # 평면 하나의 행을 받는다. 2차원을 통째로 넘기면 평면 경계를 넘어
+    # 한 워드로 묶여 조용히 다른 값이 나온다.
+    if live.ndim != 1:
+        raise ValueError(
+            f"live_row must be 1-D (one plane), got shape {live.shape}; "
+            "pass read_live[plane], not the whole array"
+        )
+    if word_tokens <= 0:
+        raise ValueError(f"word_tokens = {word_tokens}: must be >= 1")
+
     n = live.size
     pad = (-n) % word_tokens
     if pad:
@@ -55,7 +80,7 @@ def word_reads_scattered(live_row: np.ndarray, word_tokens: int) -> int:
 
 def word_reads_compacted(n_live: int, word_tokens: int) -> int:
     """살아있는 토큰을 앞으로 압축했을 때의 워드 수."""
-    return int(np.ceil(max(int(n_live), 0) / word_tokens))
+    return _ceil_div(int(n_live), word_tokens, what="word_tokens")
 
 
 @dataclass
@@ -148,19 +173,40 @@ def bitplane_bram_bytes(n_tokens: int, head_dim: int, n_planes: int = 8) -> int:
     return n_tokens * head_dim * n_planes // 8
 
 
+@dataclass(frozen=True)
+class ModelShape:
+    """용량 계산에 쓰는 모델 치수."""
+
+    head_dim: int = 64
+    n_layers: int = 16
+    n_kv_heads: int = 8
+    kv_dtype_bytes: int = 2
+
+
+# config/model.yaml -> dataclass 배선표. (필드, yaml 점표기, 변환)
+MODEL_WIRING = (
+    ("head_dim",       "model.model.head_dim",       int),
+    ("n_layers",       "model.model.n_layers",       int),
+    ("n_kv_heads",     "model.model.n_kv_heads",     int),
+    ("kv_dtype_bytes", "model.model.kv_dtype_bytes", int),
+)
+
+
 def capacity_report(cfg, seq_len: int | None = None) -> dict:
     """온칩에 무엇이 들어가고 무엇이 안 들어가는지 정리."""
-    m = cfg.get("model.model", {}) or {}
+
+    # 설정 파싱 (누락 항목: 기본값 대체 + ConfigDefaultWarning)
+    shape = ModelShape(**read_fields(cfg, ModelShape, MODEL_WIRING))
+
     seq_len = seq_len or cfg.seq_len
-    head_dim = int(m.get("head_dim", 64))
-    per_head = bitplane_bram_bytes(seq_len, head_dim, cfg.n_planes)
-    total = per_head * int(m.get("n_layers", 16)) * int(m.get("n_kv_heads", 8))
+    per_head = bitplane_bram_bytes(seq_len, shape.head_dim, cfg.n_planes)
+
     return {
         "seq_len": seq_len,
         "kv_cache_external_bytes": kv_cache_bytes(
-            int(m.get("n_layers", 16)), int(m.get("n_kv_heads", 8)),
-            head_dim, seq_len, int(m.get("kv_dtype_bytes", 2)),
+            shape.n_layers, shape.n_kv_heads, shape.head_dim,
+            seq_len, shape.kv_dtype_bytes,
         ),
         "k_bitplane_one_head_bytes": per_head,
-        "k_bitplane_all_heads_bytes": total,
+        "k_bitplane_all_heads_bytes": per_head * shape.n_layers * shape.n_kv_heads,
     }

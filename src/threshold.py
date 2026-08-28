@@ -135,9 +135,21 @@ class ThetaTracker:
 
 
 def topk_indices(scores: np.ndarray, k: int) -> np.ndarray:
-    """상위 k 인덱스 (점수 내림차순)."""
+    """상위 k 인덱스 (점수 내림차순).
+
+    -inf 로 마스킹된 자리는 뽑지 않는다. 종단된 토큰은 전부 -inf 로 동률이라
+    임의로 순서가 정해지는데, 그것이 top-k 에 섞이면 보존율이 부풀려진다.
+    살아남은 것이 k 개보다 적으면 그만큼만 돌려준다.
+    """
+    scores = np.asarray(scores)
     k = int(min(k, scores.shape[-1]))
     if k <= 0:
         return np.empty(0, dtype=np.int64)
-    idx = np.argpartition(-scores, k - 1)[:k]
+
+    finite = np.flatnonzero(np.isfinite(scores))
+    if finite.size == 0:
+        return np.empty(0, dtype=np.int64)
+
+    k = int(min(k, finite.size))
+    idx = finite[np.argpartition(-scores[finite], k - 1)[:k]]
     return idx[np.argsort(-scores[idx])]

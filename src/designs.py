@@ -16,7 +16,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 
 import numpy as np
 
@@ -114,6 +114,17 @@ def run_design(
         # 병렬 INT8 MAC — 비트평면 순차가 아니므로 사이클 모델이 다르다.
         # 읽는 비트 총량은 동일(K 전체)하므로 읽기 회계는 dense 를 그대로 쓴다.
         cycles = baseline_cycles(n_active, sched)
+
+        # 시간 합계도 이 모델로 다시 센다. apply_schedule 이 낸 값은 비트평면
+        # 순차의 사이클이라, 그대로 두면 기준선이 자기 자신보다 8배 느리다고 나온다.
+        schedule = replace(
+            schedule,
+            cycles=cycles,
+            ideal_cycles=cycles,
+            pipeline_efficiency=1.0,
+            total_cycles=(max(cycles, schedule.memory_cycles) if sched.mem_overlap
+                          else cycles + schedule.memory_cycles),
+        )
         scores_raw = accumulate(p)
         return DesignResult(
             design=design,

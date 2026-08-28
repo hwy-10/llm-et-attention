@@ -27,7 +27,7 @@ from .bounds import StepBounds, batch_step_bounds
 from .dataset import QKSnapshot
 from .designs import DESIGNS, DesignResult, run_design
 from .masked_sum import partial_dots
-from .memory import BramSpec, ReadAccount
+from .memory import BramSpec, ReadAccount, _ceil_div
 from .quantize import KeyQuant, quantize_key, to_bitplanes
 from .schedule import ScheduleSpec
 from .threshold import topk_indices
@@ -156,8 +156,11 @@ def run_decode(
     bram = bram or BramSpec()
 
     n_steps = wb.n_steps
-    total_cycles = 0
+    total_cycles = 0            # 연산 사이클 (기존 의미 — 절대 바꾸지 않는다)
+    total_memory_cycles = 0     # BRAM 포트로 나눈 메모리 사이클
+    total_cycles_mem = 0        # 둘을 합친 값 (sched.mem_overlap 가정)
     total_baseline_cycles = 0
+    total_baseline_cycles_mem = 0   # 기준선도 메모리를 포함해 잰 값
     total_reads = ReadAccount()
     term_planes: list[float] = []
     survivor_fracs: list[float] = []
@@ -204,7 +207,17 @@ def run_decode(
         )
 
         total_cycles += res.cycles
-        total_baseline_cycles += _base_cyc(n_active, sched)
+        if res.schedule is not None:
+            total_memory_cycles += res.schedule.memory_cycles
+            total_cycles_mem += res.schedule.total_cycles
+        # 기준선도 같은 잣대로 재야 한다. 분자만 연산이면 기준선을 기준선으로
+        # 나눠도 1.0 이 안 나온다 (실측 0.25). 기준선은 K 를 전부 읽으므로
+        # 메모리 몫은 dense 워드다.
+        base_cyc = _base_cyc(n_active, sched)
+        base_mem = _ceil_div(res.reads.words_dense, bram.n_ports, what="n_ports")
+        total_baseline_cycles += base_cyc
+        total_baseline_cycles_mem += (max(base_cyc, base_mem) if sched.mem_overlap
+                                      else base_cyc + base_mem)
         total_reads += res.reads
         term_planes.append(res.mean_term_plane)
         survivor_fracs.append(res.survivor_frac)
@@ -263,6 +276,20 @@ def run_decode(
         ),
         # ★ 제안 설계의 진짜 비교 대상은 ②(종단 없는 순차 처리)다 (가이드 8.1절)
         "cycle_saving_vs_seq": 1.0 - total_cycles / dense_cyc if dense_cyc else 0.0,
+        # ★ 메모리 수행 시간을 포함한 값 — 여기부터는 새로 추가된 항이다 ★
+        # total_cycles 는 연산만 센다. Decode 는 메모리 병목이라는 것이 이 프로젝트의
+        # 전제이므로, BRAM 포트로 나눈 메모리 사이클과 합친 값을 함께 낸다.
+        # 기존 결론이 조용히 움직이지 않도록 total_cycles 는 그대로 두고 더해서 낸다.
+        "total_memory_cycles": int(total_memory_cycles),
+        "total_cycles_with_memory": int(total_cycles_mem),
+        "memory_bound_frac": (
+            total_memory_cycles / total_cycles if total_cycles else 0.0
+        ),
+        "cycle_speedup_vs_baseline_with_memory": (
+            total_baseline_cycles_mem / total_cycles_mem if total_cycles_mem else 0.0
+        ),
+        "total_baseline_cycles_with_memory": int(total_baseline_cycles_mem),
+        "mem_overlap": bool(sched.mem_overlap),
         "mean_term_plane": float(np.mean(term_planes)) if term_planes else 0.0,
         "mean_survivor_frac": float(np.mean(survivor_fracs)) if survivor_fracs else 1.0,
         # (b) 종단 + top-k 희소화를 합친 손실
@@ -275,7 +302,10 @@ def run_decode(
     }
     summary.update(total_reads.as_dict())
     for k in eval_top_k:
-        summary[f"top{k}_retention"] = float(np.mean(retention[k])) if retention[k] else 1.0
+        # k=1 은 utils/metrics.py 와 같은 이름으로 낸다. 같은 값이 두 이름으로
+        # 나가면 예산 검사(top1_acc)와 실험 CSV(top1_retention)가 다른 열을 본다.
+        key = "top1_acc" if k == 1 else f"top{k}_retention"
+        summary[key] = float(np.mean(retention[k])) if retention[k] else 1.0
     # 평면별 생존 비율 (평면 0 = MSB). 종단이 몇 번째 평면부터 시작되는지.
     with np.errstate(invalid="ignore", divide="ignore"):
         frac = np.where(plane_total > 0, plane_live / plane_total, 1.0)
