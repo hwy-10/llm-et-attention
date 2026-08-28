@@ -24,6 +24,34 @@ from .quantize import N_PLANES
 # ---------------------------------------------------------------------------
 # 수치 계산
 # ---------------------------------------------------------------------------
+def masked_sum_reference(q: np.ndarray, kp: np.ndarray) -> np.ndarray:
+    """Key 비트가 1인 위치의 q 값을 선택한 뒤 head_dim 방향으로 합산한다.
+
+    ★ 이 함수가 partial_dots 의 **규약**이다. 곱셈이 한 번도 나오지 않는다 —
+    비트가 1이면 q 를 고르고 0이면 0을 고른 뒤 더할 뿐이고, 그것이 하드웨어가
+    하는 일이다.
+
+    실행 경로는 partial_dots 의 einsum 이다. 값은 같지만 이쪽이 3배 느리고
+    (전체 스윕 33.8초 -> 44.1초) 파이썬 코드 모양이 DSP 사용 여부를 증명하지도
+    않으므로, 빠른 쪽을 두고 **이 함수를 기준으로 대조하는 검사**로 규약을 지킨다.
+    tests/test_masked_sum.py::test_partial_dots_matches_the_select_and_add_reference
+    """
+    out = np.empty(
+        (kp.shape[0], q.shape[0], kp.shape[1]),
+        dtype=np.int32,
+    )
+
+    for plane in range(kp.shape[0]):
+        for step in range(q.shape[0]):
+            out[plane, step] = np.where(
+                kp[plane] == 1,
+                q[step],
+                0,
+            ).sum(axis=-1, dtype=np.int32)
+
+    return out
+
+
 def partial_dots(
     q_stored: np.ndarray,
     k_planes: np.ndarray,
@@ -52,12 +80,20 @@ def partial_dots(
     if q.shape[-1] != kp.shape[-1]:
         raise ValueError(f"head_dim mismatch: q={q.shape[-1]}, k_planes={kp.shape[-1]}")
 
+    # 비트가 0/1 이 아니면 규약이 깨진다. einsum 은 곱해 버리고(2 -> 2q)
+    # 선택-덧셈은 버린다(2 -> 0). 둘 다 조용하므로 여기서 막는다.
+    if kp.size and (int(kp.max()) > 1 or int(kp.min()) < 0):
+        raise ValueError(
+            f"k_planes must be 0/1, got range [{int(kp.min())}, {int(kp.max())}]"
+        )
+
     if not chunk or chunk >= kp.shape[1]:
         return np.einsum("sd,btd->bst", q, kp.astype(np.int32), optimize=True)
 
     outs = [
-        np.einsum("sd,btd->bst", q, kp[:, s : s + chunk, :].astype(np.int32), optimize=True)
-        for s in range(0, kp.shape[1], chunk)
+        np.einsum("sd,btd->bst", q, kp[:, start : start + chunk, :].astype(np.int32),
+                  optimize=True)
+        for start in range(0, kp.shape[1], chunk)
     ]
     return np.concatenate(outs, axis=-1)
 
@@ -99,10 +135,11 @@ class AdderTreeModel:
 
     @property
     def fully_pipelined_latency_cycles(self) -> int:
-        """단마다 레지스터를 넣었을 때의 지연. 깊이와 같은 수지만 뜻이 다르다.
+        """가산 트리의 모든 단계가 파이프라인된 경우의 예상 지연 시간.
 
-        depth 는 조합 임계 경로의 단수이고 이것은 결과가 나오기까지의 사이클이다.
-        실제 값은 레지스터 배치에 달렸으므로 합성 결과로 확정할 것.
+        depth 와 같은 수지만 뜻이 다르다 — depth 는 조합 임계 경로의 단수이고
+        이것은 결과가 나오기까지의 사이클이다. 실제 값은 레지스터 배치에
+        달렸으므로 합성 결과로 확정할 것.
         """
         return self.depth
 
@@ -161,8 +198,8 @@ def accumulator_bits(head_dim: int, q_bits: int = 8, n_planes: int = N_PLANES) -
 
     최대 |s| = (2^n_planes − 1) · 2^(q_bits−1) · head_dim
 
-    q 의 최악값은 +127 이 아니라 −128 이다. 두 식이 지금 설정에서 같은 폭을 내지만
-    유도는 실제 최악값을 써야 한다.
+    q 의 최악값은 +127 이 아니라 −128 이다. 두 식이 지금 설정에서는 같은 폭을
+    내지만 q_bits=2 에서 갈리므로 유도는 실제 최악값을 써야 한다.
     """
     max_abs = ((1 << n_planes) - 1) * (1 << (q_bits - 1)) * head_dim
     return int(math.ceil(math.log2(max_abs + 1))) + 1  # +1 = 부호

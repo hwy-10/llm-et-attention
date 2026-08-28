@@ -2,6 +2,7 @@ import numpy as np
 import pytest
 
 from src.masked_sum import (
+    masked_sum_reference,
     AdderTreeModel,
     BaselineMacModel,
     accumulator_bits,
@@ -157,33 +158,40 @@ def test_baseline_and_accumulator_width():
     """32개 PE, 1 DSP/PE 조건에서 기준 설계의 DSP 수와 누산기 비트폭이 예상한 값을 반환하는지 검증했습니다."""
 
 
-def test_partial_dots_is_select_and_add_not_multiply():
-    """★ "곱셈이 없다" 를 의미로 못박는다 — 구현은 einsum 이어도 좋다.
+def test_partial_dots_matches_the_select_and_add_reference():
+    """★ "곱셈이 없다" 를 의미로 못박는다 — 실행은 einsum 이어도 좋다.
 
-    einsum 은 빠르지만 코드만 보면 곱셈으로 읽힌다. 그래서 "비트가 1이면 q 를 고르고
-    0이면 0을 고른 뒤 더한다" 는 정의를 따로 계산해 두 값이 같은지 본다.
-
-    구현을 마스킹으로 바꾸지 않은 이유는 규모다. 실제 워크로드(8평면 x 480스텝 x
-    512토큰 x 64차원)에서 마스킹 판은 중간 배열이 **0.5 GB** 로 지금(7.9 MB)의 64배가
-    되고 4배 느리다. 값은 같으므로 빠른 쪽을 두고 의미를 검사로 지킨다.
+    einsum 은 빠르지만 코드만 보면 곱셈으로 읽힌다. 규약은
+    masked_sum_reference() 쪽이고, 그것과 값이 같은지를 여기서 본다.
+    실행 경로를 어떻게 바꿔도 규약이 깨지면 잡힌다.
     """
     rng = np.random.default_rng(0)
-    for shape in ((3, 5, 4), (1, 1, 8), (8, 7, 16)):
-        n_planes, n_tokens, head_dim = shape
+    for n_planes, n_tokens, head_dim in ((3, 5, 4), (1, 1, 8), (8, 7, 16)):
         q = rng.integers(-127, 128, size=(4, head_dim)).astype(np.int32)
-        kp = rng.integers(0, 2, size=shape).astype(np.uint8)
+        kp = rng.integers(0, 2, size=(n_planes, n_tokens, head_dim)).astype(np.uint8)
 
-        # 정의 그대로: 비트가 1인 자리의 q 만 골라 더한다. 곱셈이 한 번도 안 나온다
-        select_add = np.where(kp[:, None, :, :] == 1, q[None, :, None, :], 0)
-        want = select_add.sum(axis=-1, dtype=np.int32)
+        np.testing.assert_array_equal(partial_dots(q, kp), masked_sum_reference(q, kp))
 
-        np.testing.assert_array_equal(partial_dots(q, kp), want)
+        # 청크 경로도 같은 값이어야 한다
+        np.testing.assert_array_equal(partial_dots(q, kp, chunk=2),
+                                      masked_sum_reference(q, kp))
 
-    # 비트가 0/1 이 아니면 위 동치가 깨진다 — 전제를 같이 못박는다
-    kp2 = np.array([[[2, 0]]], dtype=np.uint8)
-    q2 = np.array([[3, 5]], dtype=np.int32)
-    assert int(partial_dots(q2, kp2)[0, 0, 0]) == 6      # einsum 은 곱한다
-    assert int(np.where(kp2[:, None] == 1, q2[None, :, None], 0).sum()) == 0
+
+def test_non_binary_planes_are_rejected():
+    """★ 비트가 0/1 이 아니면 두 경로가 갈린다 — 조용히 넘어가면 안 된다.
+
+    einsum 은 곱해 버리고(2 -> 2q), 선택-덧셈은 버린다(2 -> 0). 어느 쪽도 옳지
+    않으므로 값이 아니라 입력을 막는다.
+    """
+    q = np.array([[3, 5]], dtype=np.int32)
+
+    for bad in (np.array([[[2, 0]]], dtype=np.uint8), np.array([[[255, 1]]], dtype=np.uint8)):
+        with pytest.raises(ValueError, match="0/1"):
+            partial_dots(q, bad)
+
+    # 0/1 만 있으면 통과한다
+    ok = np.array([[[1, 0]]], dtype=np.uint8)
+    assert int(partial_dots(q, ok)[0, 0, 0]) == 3
 
 
 def test_accumulator_width_holds_the_true_worst_case():
