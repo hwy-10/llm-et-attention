@@ -42,7 +42,7 @@ def test_missing_column_raises_loudly(tmp_path):
     """★ 조용한 실패를 막는 장치 ★ 필수 열이 없으면 예외를 던져야 한다."""
     bad = tmp_path / "bad.csv"
     bad.write_text("design,seq_len,cycles\nexact,128,100\n", encoding="utf-8")
-    with pytest.raises(ValueError, match="필수 열 누락"):
+    with pytest.raises(ValueError, match="missing required columns"):
         parse_sim_csv(bad)
 
 

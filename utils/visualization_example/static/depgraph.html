@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>코드 상관관계 — SW 검증 담당 범위</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/style.css">
+<link rel="stylesheet" href="/static/depgraph.css">
+</head>
+<body>
+
+<div class="wrap">
+
+  <header>
+    <nav class="pagenav">
+      <a href="/">행렬 곱</a>
+      <a href="/schedule">조기 종단 스케줄</a>
+      <a href="/schedule_py">schedule.py 해부</a>
+      <a href="/glossary">용어 사전</a>
+      <span aria-current="page">코드 상관관계</span>
+    </nav>
+    <p class="eyebrow">Dependency graph</p>
+    <h1>담당 범위의 코드가 서로 무엇을 부르는가</h1>
+    <p class="lede">
+      우리 팀이 맡은 <b class="k-core">핵심 5개</b>, <b class="k-extra">추가 할당 4개</b>,
+      <b class="k-integration">통합 몫 4개</b>가 서로 그리고 <b class="k-other">범위 밖</b>과
+      어떻게 얽혀 있는지 본다.
+      <span class="note">
+        그림은 손으로 그리지 않았다. 서버가 저장소를 <code>ast</code> 로 파싱해
+        <b>실제 import 관계</b>만 그린다 — 코드가 바뀌면 새로고침으로 따라온다.
+      </span>
+    </p>
+  </header>
+
+  <div class="banner" id="banner" role="alert" hidden></div>
+
+  <!-- ================= 요약 ================= -->
+  <section class="summary" id="summary"></section>
+
+  <!-- ================= 그래프 ================= -->
+  <section class="stage">
+    <div class="graph-wrap">
+      <div class="graph-head">
+        <div class="legend" id="legend"></div>
+        <div class="ctrls">
+          <label class="chk"><input type="checkbox" id="showNames" checked> 가져다 쓰는 이름 표시</label>
+          <button type="button" id="reset" class="btn">선택 해제</button>
+        </div>
+      </div>
+      <div class="graph-scroll">
+        <svg id="graph" role="img" aria-label="담당 범위 코드의 import 관계 그래프"></svg>
+      </div>
+      <p class="scale-note" id="hint">
+        열은 <b>의존 깊이</b>다. 왼쪽은 아무것도 안 부르는 잎, 오른쪽으로 갈수록 남을 많이 부른다.
+        화살표는 <b>왼쪽이 오른쪽에 쓰인다</b>는 뜻이다. 상자를 누르면 그 파일만 남긴다.
+      </p>
+    </div>
+
+    <aside class="detail" id="detail"></aside>
+  </section>
+
+  <!-- ================= 목록 ================= -->
+  <section>
+    <h2 class="sec-h">파일 — 누르면 위 그림에서 짚어 준다</h2>
+    <div class="tablewrap">
+      <table class="filelist" id="filelist"></table>
+    </div>
+  </section>
+
+  <footer>
+    <h2>이 페이지의 쓰임</h2>
+    <p>
+      검증을 나눌 때 제일 먼저 묻게 되는 것이 <b>“내가 고치면 어디가 같이 흔들리나”</b> 다.
+      <code>src/memory.py</code> 하나를 고치면 <code>schedule</code> · <code>designs</code> ·
+      <code>decode_loop</code> 가 따라 움직이고, 그중 마지막은 <b>상대 팀 범위</b>다 —
+      그 사실을 그림 없이 알아채기는 어렵다.
+    </p>
+    <p>
+      ★ 로 표시된 간선이 <b>브리지</b>다. 두 팀이 주고받는 것은 <code>read_live</code> 배열
+      하나뿐이고, 그 단위가 <b>토큰 마스크</b>인 반면 우리 회계의 출력은 <b>BRAM 워드 수</b>다.
+      섞이면 모든 절감 수치가 무의미해지므로 이 간선만 따로 칠했다.
+    </p>
+    <p class="dim">
+      담당 구역이 바뀌면 <code>utils/visualization_example/depgraph.py</code> 의
+      <code>_OWN</code> 을 고치면 된다. 역할 한 줄은 <code>_ROLE</code> 에 있다.
+      노드 좌표까지 파이썬이 계산하고 브라우저는 그리기만 한다 — 이 패키지의 규약이다.
+    </p>
+  </footer>
+
+</div>
+
+<script src="/static/depgraph.js"></script>
+</body>
+</html>

@@ -1,0 +1,161 @@
+/* 함수 해부도 — style.css 의 토큰을 그대로 쓴다.
+ *
+ * 색이 뜻하는 것 (여기서도 셋뿐이다)
+ *   주황 = 입력      청록 = 출력      보라 = 핵심 동작 / 지금 고른 상자
+ * 회색 = 아직 펼치지 않은 함수.
+ */
+
+section{display:flex;flex-direction:column}
+.sec-h{margin:0 0 6px;font-size:15px;font-weight:600;letter-spacing:-.01em}
+.sec-note{margin:0 0 14px;font-size:13px;color:var(--ink-dim);max-width:80ch}
+
+/* ---------- 함수 목록 ---------- */
+.fnlist{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:9px}
+.fnbox{
+  display:flex;flex-direction:column;gap:4px;align-items:flex-start;text-align:left;
+  padding:12px 14px;border:1.5px solid var(--line-soft);border-radius:7px;
+  background:var(--panel);color:var(--ink);font-family:inherit;cursor:pointer;
+}
+.fnbox:hover:not(.off){border-color:var(--prod)}
+.fnbox:focus-visible{outline:2px solid var(--prod);outline-offset:2px}
+.fnbox.on{border-color:var(--prod);border-width:2.5px;padding:11px 13px;background:var(--prod-soft)}
+.fnbox.off{opacity:.5;cursor:default;border-style:dashed}
+.fnbox-top{display:flex;align-items:baseline;gap:8px;width:100%}
+.fnbox-name{font-family:"IBM Plex Mono",monospace;font-size:13.5px;font-weight:600}
+.fnbox.on .fnbox-name{color:var(--prod)}
+.fnbox-kind{
+  font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--ink-faint);
+  border:1px solid var(--line-soft);border-radius:20px;padding:0 7px;
+}
+.fnbox-ln{margin-left:auto;font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--ink-faint)}
+.fnbox-sig{
+  font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--ink-faint);
+  word-break:break-all;line-height:1.45;
+}
+.fnbox-blurb{font-size:12px;color:var(--ink-dim);line-height:1.45}
+.fnbox-todo{font-size:11px;color:var(--ink-faint);font-style:italic}
+
+/* ---------- 해부도 헤더 ---------- */
+.fn-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px 14px}
+.fn-head .sec-h{font-family:"IBM Plex Mono",monospace;font-size:17px;color:var(--prod)}
+.fn-meta{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--ink-faint)}
+
+/* ---------- 흐름도 ---------- */
+.flow-scroll{overflow-x:auto;padding-bottom:6px}
+.flow{display:flex;align-items:flex-start;gap:10px;width:max-content;min-width:100%}
+.col{display:flex;flex-direction:column;gap:8px;min-width:250px;max-width:320px}
+.col-core{min-width:290px;max-width:380px}
+.col-h{
+  font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ink-faint);padding-left:2px;
+}
+.col-h.sub{margin-top:8px}
+.boxes{display:flex;flex-direction:column;gap:7px}
+.arrow{display:flex;align-items:center;color:var(--ink-faint);padding-top:34px;flex:0 0 auto}
+
+/* ---------- 상자 ---------- */
+.box{
+  display:flex;flex-direction:column;gap:5px;align-items:stretch;text-align:left;
+  padding:11px 13px;border:1.5px solid var(--line-soft);border-radius:7px;
+  background:var(--panel);color:var(--ink);font-family:inherit;cursor:pointer;width:100%;
+}
+.box:hover{border-color:var(--ink-faint)}
+.box:focus-visible{outline:2px solid var(--prod);outline-offset:2px}
+.box.on{border-width:2.5px;padding:10px 12px}
+.box-top{display:flex;align-items:baseline;gap:8px}
+.box-name{font-family:"IBM Plex Mono",monospace;font-size:13px;font-weight:600}
+.box-type{
+  margin-left:auto;font-family:"IBM Plex Mono",monospace;font-size:10px;
+  color:var(--ink-faint);white-space:nowrap;
+}
+.box-sub{font-size:11.5px;color:var(--ink-dim);line-height:1.45}
+.box-count{
+  font-family:"IBM Plex Mono",monospace;font-size:10px;color:var(--ink-faint);
+}
+
+.box.in{border-left:4px solid var(--row)}
+.box.in .box-name{color:var(--row)}
+.box.in.on{border-color:var(--row)}
+.box.out{border-left:4px solid var(--col)}
+.box.out .box-name{color:var(--col)}
+.box.out.on{border-color:var(--col)}
+.box.core{border-left:4px solid var(--prod)}
+.box.core .box-name{color:var(--prod)}
+.box.core.on{border-color:var(--prod);background:var(--prod-soft)}
+.box.branch{border-left:4px solid var(--prod);border-style:dashed}
+.box.branch.on{border-style:solid;border-color:var(--prod);background:var(--prod-soft)}
+.box.branch .box-name{color:var(--prod)}
+
+/* ---------- 상세 패널 ---------- */
+.detail{
+  margin-top:16px;background:var(--panel);border:1px solid var(--line-soft);
+  border-radius:8px;padding:20px 22px;min-height:150px;
+}
+.detail-empty{color:var(--ink-dim);font-size:14px;display:flex;align-items:center;min-height:100px}
+.detail-h{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 12px;margin-bottom:6px}
+.detail-h b{font-family:"IBM Plex Mono",monospace;font-size:16px;font-weight:600}
+.detail-h .tag{
+  font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.05em;
+  text-transform:uppercase;border:1px solid var(--line-soft);border-radius:20px;
+  padding:1px 9px;color:var(--ink-faint);
+}
+.detail.k-in .detail-h b{color:var(--row)}
+.detail.k-out .detail-h b{color:var(--col)}
+.detail.k-core .detail-h b,.detail.k-branch .detail-h b{color:var(--prod)}
+.detail-desc{font-size:13.5px;color:var(--ink-dim);margin:0 0 14px;max-width:82ch;line-height:1.65}
+.detail-desc b{color:var(--ink)}
+.detail h4{
+  margin:18px 0 8px;font-size:12px;font-weight:600;letter-spacing:.03em;
+  color:var(--ink-faint);text-transform:uppercase;
+  font-family:"IBM Plex Mono",monospace;
+}
+.detail pre{
+  margin:0;padding:12px 14px;background:var(--panel-2);
+  border:1px solid var(--line-soft);border-radius:6px;overflow-x:auto;
+  font-family:"IBM Plex Mono",monospace;font-size:12.5px;line-height:1.6;
+  color:var(--ink);
+}
+.detail code{
+  font-family:"IBM Plex Mono",monospace;font-size:12.5px;
+  background:var(--panel-2);border:1px solid var(--line-soft);
+  border-radius:3px;padding:1px 5px;
+}
+
+/* 필드 표 */
+.ftable{border-collapse:collapse;width:100%;margin-top:2px}
+.ftable th,.ftable td{
+  padding:7px 10px;border-bottom:1px solid var(--line-soft);
+  text-align:left;vertical-align:top;font-size:12.5px;
+}
+.ftable thead th{
+  font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--ink-faint);
+  letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;
+}
+.ftable tbody tr:last-child td{border-bottom:0}
+.ftable .fname{font-family:"IBM Plex Mono",monospace;font-weight:600;white-space:nowrap}
+.ftable .ftype{font-family:"IBM Plex Mono",monospace;color:var(--ink-faint);white-space:nowrap;font-size:11.5px}
+.ftable .fdesc{color:var(--ink-dim);line-height:1.6}
+.ftable tr.star .fname{color:var(--prod)}
+.ftable tr.unused{opacity:.55}
+.ftable tr.nodoc .fdesc{color:var(--warn);font-style:italic}
+
+.choices{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.choices span{
+  font-family:"IBM Plex Mono",monospace;font-size:11.5px;
+  border:1px solid var(--prod);border-radius:20px;padding:1px 10px;color:var(--prod);
+}
+
+/* ---------- 어긋남 경고 ---------- */
+.drift{
+  margin-top:12px;padding:12px 15px;border-radius:8px;
+  background:var(--warn-soft);border:1px solid var(--warn);color:var(--warn);
+  font-size:13px;
+}
+.drift code{background:transparent;border:0;color:inherit;padding:0;font-weight:600}
+
+@media (max-width:900px){
+  .flow{flex-direction:column;width:100%}
+  .col,.col-core{max-width:none;min-width:0;width:100%}
+  .arrow{padding:0;transform:rotate(90deg);align-self:center}
+}

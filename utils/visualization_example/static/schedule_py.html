@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>schedule.py 해부 — 입력 → 핵심 동작 → 출력</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/style.css">
+<link rel="stylesheet" href="/static/anatomy.css">
+</head>
+<body>
+
+<div class="wrap">
+
+  <header>
+    <nav class="pagenav">
+      <a href="/">행렬 곱</a>
+      <a href="/schedule">조기 종단 스케줄</a>
+      <span aria-current="page">schedule.py 해부</span>
+      <a href="/glossary">용어 사전</a>
+      <a href="/depgraph">코드 상관관계</a>
+    </nav>
+    <p class="eyebrow" id="modLine">src/schedule.py</p>
+    <h1>함수 하나를 상자로 편다</h1>
+    <p class="lede">
+      <b>함수를 누르면</b> 입력 → 핵심 동작 → 출력이 상자로 펼쳐지고,
+      <b>상자를 누르면</b> 그 안에서 무슨 일이 일어나는지 아래에 나온다.
+      <span class="note">
+        상자는 손으로 베낀 것이 아니다. 매개변수는 <code>inspect.signature</code>,
+        필드는 <code>dataclasses.fields</code>, 코드 인용은 <code>inspect.getsource</code> 로
+        <b>실제 코드에서 읽어</b> 만든다 — 코드가 바뀌면 그림도 따라 바뀐다.
+      </span>
+    </p>
+  </header>
+
+  <div class="banner" id="banner" role="alert" hidden></div>
+
+  <!-- ============ 모듈 목록 ============ -->
+  <section>
+    <h2 class="sec-h">함수 목록</h2>
+    <p class="sec-note">
+      <b>지금은 <code>apply()</code> 하나만 펼쳐져 있다.</b> 나머지는 목록에만 올려 두었다 —
+      같은 틀로 하나씩 붙여 나가면 된다.
+    </p>
+    <div class="fnlist" id="fnlist"></div>
+  </section>
+
+  <!-- ============ 해부도 ============ -->
+  <section id="anatomySec" hidden>
+    <div class="fn-head">
+      <h2 class="sec-h" id="fnTitle"></h2>
+      <span class="fn-meta" id="fnMeta"></span>
+    </div>
+    <p class="sec-note" id="fnDoc"></p>
+
+    <div class="flow-scroll">
+      <div class="flow">
+        <div class="col">
+          <div class="col-h">입력</div>
+          <div class="boxes" id="colIn"></div>
+        </div>
+
+        <div class="arrow" aria-hidden="true">
+          <svg viewBox="0 0 40 14" width="40" height="14">
+            <line x1="0" y1="7" x2="30" y2="7" stroke="currentColor" stroke-width="2"/>
+            <polygon points="30,2 39,7 30,12" fill="currentColor"/>
+          </svg>
+        </div>
+
+        <div class="col col-core">
+          <div class="col-h">핵심 동작</div>
+          <div class="boxes" id="colCore"></div>
+          <div class="col-h sub">정책별 분기</div>
+          <div class="boxes branches" id="colBranch"></div>
+        </div>
+
+        <div class="arrow" aria-hidden="true">
+          <svg viewBox="0 0 40 14" width="40" height="14">
+            <line x1="0" y1="7" x2="30" y2="7" stroke="currentColor" stroke-width="2"/>
+            <polygon points="30,2 39,7 30,12" fill="currentColor"/>
+          </svg>
+        </div>
+
+        <div class="col">
+          <div class="col-h">출력</div>
+          <div class="boxes" id="colOut"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail" id="detail">
+      <div class="detail-empty">위의 <b>상자를 눌러</b> 내부 동작을 펼쳐 보라.</div>
+    </div>
+
+    <div class="drift" id="drift" hidden></div>
+  </section>
+
+  <footer>
+    <h2>왜 코드에서 읽어 오나</h2>
+    <p>
+      손으로 베낀 그림은 <b>조용히 낡는다.</b> 누가 <code>ScheduleSpec</code> 에 필드를 하나 더해도
+      그림은 그대로 남아 있고, 보는 사람은 그것이 최신이라고 믿는다.
+    </p>
+    <p>
+      여기서는 코드에 필드가 늘면 상자도 늘고, <b>설명이 없는 항목은 화면에 «설명 없음» 으로 뜬다.</b>
+      아래 빨간 줄이 그 경고다 — 비어 있어야 정상이다.
+      정책 분기의 코드 인용도 <code>inspect.getsource</code> 로 원본에서 잘라 오므로
+      복사본이 아니다.
+    </p>
+    <p class="dim">
+      설명 문장만 사람이 쓴다 — <code>utils/visualization_example/anatomy.py</code> 의
+      <code>_FIELD_DESC</code> · <code>_BRANCH_DESC</code> · <code>_CORE_STEPS</code>.
+      새 함수를 붙이려면 거기에 설명을 추가하고 <code>describe()</code> 에 갈래를 하나 늘리면 된다.
+    </p>
+  </footer>
+
+</div>
+
+<script src="/static/anatomy.js"></script>
+</body>
+</html>

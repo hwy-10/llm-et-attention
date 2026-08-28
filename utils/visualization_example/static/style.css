@@ -1,0 +1,329 @@
+/* 공용 스타일 — 두 페이지가 함께 쓴다 (/ 와 /schedule).
+ *
+ * 토큰, 페이지 탭, 버튼·배너 같은 공통 껍데기가 여기 있고,
+ * /schedule 전용 규칙만 schedule.css 에 있다.
+ *
+ * 색은 세 가지뿐이고 각각 뜻이 있다. 장식으로 쓰는 색은 없다.
+ *   주황 = A 의 행 (i)   청록 = B 의 열 (j)   보라 = 결과 C[i][j] 와 짝지어진 k
+ */
+
+:root{
+  --ground:#EDF0F4;
+  --panel:#FFFFFF;
+  --panel-2:#F5F7FA;
+  --ink:#151922;
+  --ink-dim:#5A6474;
+  --ink-faint:#8A94A4;
+  --line:#C7D0DC;
+  --line-soft:#DFE5EC;
+
+  --row:#B4530A;   --row-soft:#FBE7CE;  --row-faint:#FAF2E8;
+  --col:#0C7086;   --col-soft:#D2ECF2;  --col-faint:#EDF6F8;
+  --prod:#6427C9;  --prod-soft:#E8DFFA; --on-prod:#FFFFFF;
+  --warn:#B4200A;  --warn-soft:#FBE0DC;
+
+  --cell:42px;
+  --gut:19px;
+  --hdr:17px;
+  --gap:4px;
+  --radius:5px;
+}
+
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#11141B; --panel:#191E27; --panel-2:#1F2530;
+    --ink:#E6EBF2; --ink-dim:#98A3B4; --ink-faint:#6B7688;
+    --line:#333C4A; --line-soft:#272F3B;
+    --row:#F2A860; --row-soft:#3E2C16; --row-faint:#241C13;
+    --col:#5AC8DC; --col-soft:#123840; --col-faint:#0F2429;
+    --prod:#A98CF7; --prod-soft:#2C2350; --on-prod:#12101E;
+    --warn:#F58A78; --warn-soft:#3B1C16;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#11141B; --panel:#191E27; --panel-2:#1F2530;
+  --ink:#E6EBF2; --ink-dim:#98A3B4; --ink-faint:#6B7688;
+  --line:#333C4A; --line-soft:#272F3B;
+  --row:#F2A860; --row-soft:#3E2C16; --row-faint:#241C13;
+  --col:#5AC8DC; --col-soft:#123840; --col-faint:#0F2429;
+  --prod:#A98CF7; --prod-soft:#2C2350; --on-prod:#12101E;
+  --warn:#F58A78; --warn-soft:#3B1C16;
+}
+
+*{box-sizing:border-box}
+html{color-scheme:light dark}
+
+body{
+  margin:0;
+  background:var(--ground);
+  color:var(--ink);
+  font-family:"IBM Plex Sans KR","IBM Plex Sans",system-ui,"Malgun Gothic",sans-serif;
+  font-size:15px; line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{
+  max-width:1060px; margin:0 auto;
+  padding:40px 24px 72px;
+  display:flex; flex-direction:column; gap:28px;
+}
+
+/* ---------- 페이지 탭 (두 페이지 공용) ---------- */
+.pagenav{
+  display:flex;gap:14px;align-items:center;margin:0 0 18px;
+  font-family:"IBM Plex Mono",monospace;font-size:12px;
+}
+.pagenav a,.pagenav span{
+  padding:4px 11px;border-radius:20px;text-decoration:none;
+  border:1px solid var(--line-soft);color:var(--ink-dim);
+}
+.pagenav a:hover{border-color:var(--ink-dim);color:var(--ink)}
+.pagenav [aria-current]{background:var(--prod);border-color:var(--prod);color:var(--on-prod);font-weight:600}
+
+/* ---------- header ---------- */
+.eyebrow{
+  margin:0 0 6px;
+  font-family:"IBM Plex Mono",monospace;
+  font-size:11.5px; font-weight:500;
+  letter-spacing:.16em; text-transform:uppercase;
+  color:var(--ink-faint);
+}
+h1{
+  margin:0 0 12px;
+  font-size:clamp(28px,4.6vw,40px);
+  font-weight:700; letter-spacing:-.02em; line-height:1.15;
+  text-wrap:balance;
+}
+.lede{margin:0;max-width:64ch;color:var(--ink-dim)}
+.lede .note{display:block;margin-top:6px;font-size:13px;color:var(--ink-faint)}
+.k-row{color:var(--row);font-weight:600}
+.k-col{color:var(--col);font-weight:600}
+.k-prod{color:var(--prod);font-weight:600}
+
+/* ---------- 오류 배너 ---------- */
+.banner{
+  padding:11px 15px;
+  background:var(--warn-soft);
+  border:1px solid var(--warn);
+  border-radius:8px;
+  color:var(--warn);
+  font-size:13.5px;
+  font-family:"IBM Plex Mono",monospace;
+}
+
+/* ---------- controls ---------- */
+.controls{
+  display:flex; flex-wrap:wrap; align-items:center; gap:10px 18px;
+  padding:13px 16px;
+  background:var(--panel); border:1px solid var(--line-soft); border-radius:8px;
+}
+.ctl-group{display:flex;align-items:center;gap:8px}
+.ctl-label{
+  font-family:"IBM Plex Mono",monospace;
+  font-size:11.5px; letter-spacing:.07em; text-transform:uppercase;
+  color:var(--ink-faint); white-space:nowrap;
+}
+.ctl-label i{font-style:italic;color:var(--ink-dim)}
+.stepper{
+  display:flex;align-items:center;
+  border:1px solid var(--line); border-radius:var(--radius);
+  overflow:hidden; background:var(--panel-2);
+}
+.stepper button{
+  width:24px;height:26px;border:0;background:transparent;
+  color:var(--ink-dim); font-size:14px;line-height:1;cursor:pointer;
+  font-family:"IBM Plex Mono",monospace;
+}
+.stepper button:hover:not(:disabled){background:var(--line-soft);color:var(--ink)}
+.stepper button:disabled{opacity:.3;cursor:default}
+.stepper .val{
+  min-width:26px;text-align:center;
+  font-family:"IBM Plex Mono",monospace;
+  font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;
+  border-left:1px solid var(--line);border-right:1px solid var(--line);padding:2px 0;
+}
+.btn{
+  padding:5px 12px;
+  border:1px solid var(--line); border-radius:var(--radius);
+  background:var(--panel-2); color:var(--ink);
+  font-family:inherit; font-size:13px; cursor:pointer; white-space:nowrap;
+}
+.btn:hover{border-color:var(--ink-dim)}
+.btn[aria-pressed="true"]{background:var(--prod);border-color:var(--prod);color:var(--on-prod)}
+.spacer{flex:1 1 auto}
+
+/* ---------- board ---------- */
+.board-scroll{overflow-x:auto;padding-bottom:4px}
+.board{
+  position:relative;
+  display:flex; align-items:center; gap:14px;
+  width:max-content;
+  padding:36px 4px 40px;   /* 위: 열 레일, 아래: 행 레일 */
+}
+#guides{position:absolute;left:0;top:0;pointer-events:none;overflow:visible}
+
+.mat-block{display:flex;flex-direction:column;gap:7px;position:relative;z-index:1}
+.mat-name{
+  font-family:"IBM Plex Mono",monospace;
+  font-size:11.5px; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--ink-faint); white-space:nowrap;
+}
+.mat-name b{font-weight:600;font-size:12.5px;letter-spacing:.05em}
+.mat-name.n-a b{color:var(--row)}
+.mat-name.n-b b{color:var(--col)}
+.mat-name.n-c b{color:var(--prod)}
+.mat-name em{font-style:normal;color:var(--ink-faint);font-size:11px}
+
+.grid{
+  display:grid; gap:var(--gap);
+  padding:9px 10px 10px;
+  background:var(--panel); border:1px solid var(--line-soft); border-radius:8px;
+  width:max-content;
+}
+.op{
+  font-family:"IBM Plex Mono",monospace;
+  font-size:20px; font-weight:500; color:var(--ink-faint);
+  padding:0 2px; align-self:center;
+  position:relative; z-index:1; margin-top:6px;
+}
+
+/* 인덱스 거터 */
+.lab{
+  display:flex;align-items:center;justify-content:center;
+  border:0;background:transparent;padding:0;
+  font-family:"IBM Plex Mono",monospace;
+  font-size:10.5px;font-weight:500;
+  color:var(--ink-faint);
+  font-variant-numeric:tabular-nums;
+  cursor:pointer; border-radius:3px;
+  transition:color .13s ease,background .13s ease;
+}
+.lab.top{height:var(--hdr);width:var(--cell)}
+.lab.side{width:var(--gut);height:var(--cell)}
+.lab.corner{width:var(--gut);height:var(--hdr);cursor:default;font-size:9px}
+.lab:hover:not(.corner){color:var(--ink)}
+.lab.on-row{color:var(--row);font-weight:700;background:var(--row-soft)}
+.lab.on-col{color:var(--col);font-weight:700;background:var(--col-soft)}
+.lab.on-k{color:var(--prod);font-weight:700;background:var(--prod-soft)}
+.lab:focus-visible{outline:2px solid var(--prod);outline-offset:1px}
+
+/* 칸 */
+.cell{
+  width:var(--cell);height:var(--cell);
+  display:flex;align-items:center;justify-content:center;
+  border:1.5px solid var(--line-soft); border-radius:var(--radius);
+  background:var(--panel-2); color:var(--ink);
+  font-family:"IBM Plex Mono",monospace;
+  font-size:14px;font-weight:500;font-variant-numeric:tabular-nums;
+  cursor:pointer;padding:0;
+  transition:background .13s ease,border-color .13s ease,color .13s ease;
+}
+.cell:hover{border-color:var(--ink-faint)}
+.cell:focus-visible{outline:2px solid var(--prod);outline-offset:2px}
+.cell.hl-row{background:var(--row-soft);border-color:var(--row)}
+.cell.hl-col{background:var(--col-soft);border-color:var(--col)}
+.cell.hl-row-faint{background:var(--row-faint);border-color:var(--row-soft)}
+.cell.hl-col-faint{background:var(--col-faint);border-color:var(--col-soft)}
+.cell.hl-prod{background:var(--prod);border-color:var(--prod);color:var(--on-prod);font-weight:700}
+.cell.hl-term{border-width:2.5px;border-color:var(--prod);font-weight:700}
+.cell input{
+  width:100%;height:100%;border:0;background:transparent;text-align:center;
+  font-family:"IBM Plex Mono",monospace;font-size:14px;font-weight:500;
+  color:inherit;-moz-appearance:textfield;appearance:textfield;
+}
+.cell input::-webkit-outer-spin-button,
+.cell input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.cell input:focus{outline:2px solid var(--prod);outline-offset:-2px;border-radius:3px}
+
+/* ---------- legend ---------- */
+.legend{display:flex;flex-wrap:wrap;gap:8px 22px;font-size:12.5px;color:var(--ink-dim);margin:0}
+.legend i{
+  display:inline-block;width:11px;height:11px;border-radius:3px;
+  border:1.5px solid;margin-right:7px;vertical-align:-1px;
+}
+.lg-row i{background:var(--row-soft);border-color:var(--row)}
+.lg-col i{background:var(--col-soft);border-color:var(--col)}
+.lg-prod i{background:var(--prod);border-color:var(--prod)}
+
+/* ---------- calc ---------- */
+.calc{
+  background:var(--panel); border:1px solid var(--line-soft);
+  border-radius:8px; padding:20px 22px; min-height:160px;
+}
+.calc-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 14px;margin-bottom:18px}
+.calc-title{font-family:"IBM Plex Mono",monospace;font-size:17px;font-weight:600;color:var(--prod)}
+.calc-sigma{font-family:"IBM Plex Mono",monospace;font-size:13px;color:var(--ink-faint)}
+.badge{
+  margin-left:auto;
+  font-family:"IBM Plex Mono",monospace;font-size:11px;
+  color:var(--ink-faint);border:1px solid var(--line-soft);
+  border-radius:20px;padding:2px 10px;white-space:nowrap;
+}
+.empty{color:var(--ink-dim);font-size:14px;display:flex;align-items:center;min-height:104px}
+.empty span{max-width:54ch}
+
+.vec{display:flex;align-items:stretch;gap:4px;overflow-x:auto;padding-bottom:4px}
+.vec-labels{
+  display:flex;flex-direction:column;
+  padding-right:10px;text-align:right;flex:0 0 auto;
+  border-right:1px solid var(--line-soft);margin-right:6px;
+}
+.vec-labels span{
+  height:27px;display:flex;align-items:center;justify-content:flex-end;
+  font-family:"IBM Plex Mono",monospace;font-size:11px;
+  color:var(--ink-faint);white-space:nowrap;
+}
+.vec-labels span.l-a{color:var(--row)}
+.vec-labels span.l-b{color:var(--col)}
+.vec-labels span.l-p{color:var(--ink-dim)}
+
+.vcol{
+  display:flex;flex-direction:column;
+  border:1.5px solid transparent;border-radius:var(--radius);
+  background:transparent;cursor:pointer;padding:0 3px;flex:0 0 auto;
+  font-family:"IBM Plex Mono",monospace;
+}
+.vcol:hover{background:var(--panel-2)}
+.vcol.on{border-color:var(--prod);background:var(--prod-soft)}
+.vcol.dim{opacity:.34}
+.vcol:focus-visible{outline:2px solid var(--prod);outline-offset:1px}
+.vcol span{
+  height:27px;min-width:46px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:13.5px;font-variant-numeric:tabular-nums;color:var(--ink);
+}
+.vcol .v-k{font-size:10.5px;color:var(--ink-faint);letter-spacing:.05em}
+.vcol.on .v-k{color:var(--prod);font-weight:700}
+.vcol .v-a{color:var(--row);font-weight:600}
+.vcol .v-b{color:var(--col);font-weight:600}
+.vcol .v-p{border-top:1px solid var(--line-soft);font-weight:600}
+.vcol .v-s{font-size:11.5px;color:var(--ink-faint)}
+
+.total{
+  display:flex;flex-wrap:wrap;align-items:center;gap:10px;
+  margin-top:16px;padding-top:14px;border-top:1px solid var(--line-soft);
+  font-family:"IBM Plex Mono",monospace;font-size:13.5px;
+  color:var(--ink-dim);font-variant-numeric:tabular-nums;
+}
+.total .sum{color:var(--ink);font-size:14px}
+.total .final{font-size:19px;font-weight:700;color:var(--prod)}
+.total .run{margin-left:auto;font-size:12.5px;color:var(--ink-faint)}
+
+/* ---------- footer ---------- */
+footer{
+  border-top:1px solid var(--line-soft);padding-top:20px;
+  color:var(--ink-dim);font-size:13.5px;max-width:72ch;
+}
+footer h2{margin:0 0 8px;font-size:13px;font-weight:600;color:var(--ink);letter-spacing:-.01em}
+footer p{margin:0 0 10px}
+footer p.dim{color:var(--ink-faint);font-size:12.5px;margin-bottom:0}
+code{
+  font-family:"IBM Plex Mono",monospace;font-size:12.5px;
+  background:var(--panel);border:1px solid var(--line-soft);
+  border-radius:3px;padding:1px 5px;
+}
+
+@media (prefers-reduced-motion:reduce){*{transition:none !important;animation:none !important}}
+@media (max-width:640px){
+  :root{--cell:36px;--gut:16px}
+  .wrap{padding:28px 16px 56px;gap:22px}
+}

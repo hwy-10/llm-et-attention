@@ -27,7 +27,7 @@ all = [
 ]
 
 [tool.setuptools]
-packages = ["src", "utils", "experiments"]
+packages = ["src", "utils", "utils.visualization_example", "experiments"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

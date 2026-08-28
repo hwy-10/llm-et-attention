@@ -183,8 +183,8 @@ def parse_sim_csv(path: str | Path) -> list[dict]:
         missing = [c for c in REQUIRED_SIM_COLUMNS if c not in (reader.fieldnames or [])]
         if missing:
             raise ValueError(
-                f"{path.name}: 필수 열 누락 {missing}. rtl_data/schema.md 를 따르세요. "
-                f"(발견된 열: {reader.fieldnames})"
+                f"{path.name}: missing required columns {missing}; "
+                f"follow rtl_data/schema.md (found: {reader.fieldnames})"
             )
         for r in reader:
             rows.append({k: _num(v) for k, v in r.items()})

@@ -48,7 +48,10 @@ def run(cfg=None, wb=None, verbose: bool = True) -> list[dict]:
         for vname, vval in variants:
             sched = spec_from_config(cfg, **({vname: int(vval)} if vname else {}))
             for wt in word_tokens:
-                bram = bram_from_config(cfg, word_tokens=int(wt))
+                # 워드는 토큰당 1비트를 담는다. 폭을 같이 넓혀야 bits_read 가 뜻을 갖는다.
+                base_bits = bram_from_config(cfg).word_bits
+                bram = bram_from_config(cfg, word_tokens=int(wt),
+                                        word_bits=max(base_bits, int(wt)))
                 for top_k in top_ks:
                     for margin in margins:
                         design = "exact" if margin == 0.0 else "approx"

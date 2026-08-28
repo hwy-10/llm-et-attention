@@ -1,0 +1,217 @@
+/* 용어 사전 — style.css 의 토큰을 그대로 쓴다.
+ *
+ * 색이 뜻하는 것
+ *   주황 = 행 방향 (비트평면, 사이클)
+ *   청록 = 열 방향 (토큰)
+ *   보라 = 지금 고른 용어가 가리키는 자리
+ * 격자의 바탕은 색을 쓰지 않는다 — 강조가 묻히면 안 되기 때문이다.
+ */
+
+section{display:flex;flex-direction:column}
+.sec-h{margin:0 0 6px;font-size:15px;font-weight:600;letter-spacing:-.01em}
+.sec-note{margin:0 0 14px;font-size:13px;color:var(--ink-dim);max-width:80ch}
+
+/* ---------- 무대 (캔버스 + 카드) ---------- */
+.stage{
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,380px);
+  gap:16px;align-items:start;
+}
+.canvas-wrap{
+  background:var(--panel);border:1px solid var(--line-soft);border-radius:8px;
+  padding:16px 18px 14px;display:flex;flex-direction:column;gap:10px;min-width:0;
+}
+.canvas-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px}
+.ctag{
+  font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--ink-faint);
+  border:1px solid var(--line-soft);border-radius:20px;padding:1px 10px;
+}
+.chint{font-size:12px;color:var(--ink-dim)}
+.canvas-scroll{overflow-x:auto;padding-bottom:4px}
+.canvas{width:max-content;min-width:100%}
+.scale-note{
+  margin:0;font-size:11.5px;color:var(--ink-faint);line-height:1.5;
+  padding-top:8px;border-top:1px solid var(--line-soft);
+}
+
+/* ---------- 격자 캔버스 ---------- */
+.grid-rows{display:flex;flex-direction:column;gap:3px}
+.grow{display:flex;align-items:center;gap:9px}
+.grow-lab{
+  width:26px;flex:0 0 auto;text-align:right;
+  font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--ink-faint);
+}
+.grow.hit .grow-lab{color:var(--row);font-weight:700}
+.gcells{display:flex;gap:2px}
+.gcell{
+  width:19px;height:19px;border-radius:2px;
+  background:var(--panel-2);border:1px solid var(--line-soft);
+  transition:background .12s ease,border-color .12s ease;
+}
+.gcell.live{background:var(--line-soft);border-color:var(--line)}
+.gcell.dead{background:transparent;border-style:dashed;opacity:.45}
+.gcell.hit{background:var(--prod);border-color:var(--prod)}
+.gcell.hit2{background:var(--row);border-color:var(--row)}
+.gcell.dim{opacity:.28}
+.gaxis{
+  display:flex;gap:2px;margin-left:35px;margin-top:5px;
+}
+.gaxis span{
+  width:19px;text-align:center;
+  font-family:"IBM Plex Mono",monospace;font-size:8.5px;color:var(--ink-faint);
+}
+.gaxis span.hit{color:var(--col);font-weight:700}
+.gaxis-title{
+  margin-left:35px;margin-top:2px;
+  font-family:"IBM Plex Mono",monospace;font-size:10px;color:var(--ink-faint);
+}
+.gcol-band{
+  position:relative;
+}
+.glegend{
+  display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:8px;
+  font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--ink-faint);
+}
+.glegend i{
+  display:inline-block;width:10px;height:10px;border-radius:2px;
+  margin-right:6px;vertical-align:-1px;border:1px solid;
+}
+
+/* ---------- 구간(수직선) 캔버스 ---------- */
+.bline{position:relative;height:150px;margin:10px 0 4px}
+.bline svg{width:100%;height:100%;overflow:visible}
+.bline text{font-family:"IBM Plex Mono",monospace;font-size:11px;fill:var(--ink-dim)}
+.bline text.hit{fill:var(--prod);font-weight:700}
+.bline .axis{stroke:var(--line);stroke-width:1.5}
+.bline .tick{stroke:var(--ink-faint);stroke-width:1.5}
+.bline .tick.hit{stroke:var(--prod);stroke-width:3}
+.bline .span{stroke:var(--line-soft);stroke-width:10;stroke-linecap:round}
+.bline .span.hit{stroke:var(--prod-soft)}
+.bline .truth{fill:var(--col)}
+
+/* ---------- 벡터 캔버스 ---------- */
+.vecrow{display:flex;align-items:center;gap:9px;margin-bottom:8px}
+.vecrow-lab{
+  width:56px;flex:0 0 auto;text-align:right;
+  font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--ink-faint);
+}
+.vecrow.hit .vecrow-lab{color:var(--prod);font-weight:700}
+.veccells{display:flex;gap:3px}
+.veccell{
+  width:34px;height:26px;border-radius:3px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:"IBM Plex Mono",monospace;font-size:11.5px;font-variant-numeric:tabular-nums;
+  background:var(--panel-2);border:1.5px solid var(--line-soft);color:var(--ink);
+}
+.veccell.pos{color:var(--row);font-weight:600}
+.veccell.neg{color:var(--col);font-weight:600}
+.veccell.bit1{background:var(--prod);border-color:var(--prod);color:var(--on-prod);font-weight:700}
+.veccell.bit0{opacity:.4;border-style:dashed}
+.veccell.hit{outline:2.5px solid var(--prod);outline-offset:1px}
+.vecnote{
+  font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--ink-dim);
+  margin-left:65px;margin-top:2px;
+}
+
+/* ---------- 용어 카드 ---------- */
+.termcard{
+  background:var(--panel);border:1px solid var(--line-soft);
+  border-left:4px solid var(--prod);border-radius:8px;
+  padding:18px 20px;min-height:200px;position:sticky;top:16px;
+}
+.tc-empty{color:var(--ink-dim);font-size:14px;display:flex;align-items:center;min-height:160px}
+.tc-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 10px;margin-bottom:4px}
+.tc-term{font-size:19px;font-weight:700;letter-spacing:-.02em;color:var(--prod)}
+.tc-en{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--ink-faint)}
+.tc-group{
+  margin-left:auto;font-family:"IBM Plex Mono",monospace;font-size:10px;
+  letter-spacing:.05em;border:1px solid var(--line-soft);border-radius:20px;
+  padding:1px 9px;color:var(--ink-faint);white-space:nowrap;
+}
+.tc-one{font-size:13.5px;color:var(--ink);margin:0 0 12px;line-height:1.6}
+.tc-real{
+  font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--ink-dim);
+  background:var(--panel-2);border:1px solid var(--line-soft);border-radius:5px;
+  padding:6px 10px;margin-bottom:12px;
+}
+.tc-real b{color:var(--ink)}
+.tc-detail{font-size:13px;color:var(--ink-dim);line-height:1.7;max-width:none}
+.tc-detail p{margin:0 0 10px}
+.tc-detail b{color:var(--ink)}
+.tc-detail pre{
+  margin:8px 0;padding:10px 12px;background:var(--panel-2);
+  border:1px solid var(--line-soft);border-radius:5px;overflow-x:auto;
+  font-family:"IBM Plex Mono",monospace;font-size:11.5px;line-height:1.6;color:var(--ink);
+}
+.tc-confuse{
+  margin-top:14px;padding-top:12px;border-top:1px solid var(--line-soft);
+  font-size:12px;color:var(--ink-faint);
+}
+.tc-confuse b{color:var(--warn)}
+.tc-confuse button{
+  font-family:"IBM Plex Mono",monospace;font-size:11.5px;
+  border:1px solid var(--warn);border-radius:20px;padding:1px 10px;
+  background:transparent;color:var(--warn);cursor:pointer;margin:4px 4px 0 0;
+}
+.tc-confuse button:hover{background:var(--warn-soft)}
+
+/* ---------- 용어 목록 ---------- */
+.glist{display:flex;flex-direction:column;gap:14px}
+.ggroup-h{
+  font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ink-faint);margin-bottom:7px;
+}
+.gitems{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:8px}
+.gitem{
+  display:flex;flex-direction:column;gap:3px;align-items:flex-start;text-align:left;
+  padding:10px 13px;border:1.5px solid var(--line-soft);border-radius:7px;
+  background:var(--panel);color:var(--ink);font-family:inherit;cursor:pointer;
+}
+.gitem:hover{border-color:var(--prod)}
+.gitem:focus-visible{outline:2px solid var(--prod);outline-offset:2px}
+.gitem.on{border-color:var(--prod);border-width:2.5px;padding:9px 12px;background:var(--prod-soft)}
+.gitem-top{display:flex;align-items:baseline;gap:7px;width:100%}
+.gitem-term{font-size:13.5px;font-weight:600}
+.gitem.on .gitem-term{color:var(--prod)}
+.gitem-en{
+  margin-left:auto;font-family:"IBM Plex Mono",monospace;font-size:10px;
+  color:var(--ink-faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:52%;
+}
+.gitem-one{font-size:11.5px;color:var(--ink-dim);line-height:1.45}
+
+/* ---------- 헷갈리는 짝 ---------- */
+.pairs{display:flex;flex-direction:column;gap:12px}
+.pair{
+  background:var(--panel);border:1px solid var(--line-soft);border-radius:8px;
+  padding:16px 18px;display:flex;flex-direction:column;gap:10px;
+}
+.pair-h{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px}
+.pair-h b{font-size:14px;font-weight:600}
+.pair-btns{margin-left:auto;display:flex;gap:6px}
+.pair-btns button{
+  font-family:"IBM Plex Mono",monospace;font-size:11.5px;cursor:pointer;
+  border:1px solid var(--line);border-radius:20px;padding:2px 11px;
+  background:var(--panel-2);color:var(--ink);
+}
+.pair-btns button:hover{border-color:var(--prod);color:var(--prod)}
+.pair-btns button.a{border-color:var(--prod);color:var(--prod)}
+.pair-btns button.b{border-color:var(--row);color:var(--row)}
+.pair-why{font-size:12.5px;color:var(--ink-dim);line-height:1.65;margin:0}
+.pair-why b{color:var(--ink)}
+.pair-mini{display:flex;flex-wrap:wrap;gap:18px}
+.mini{display:flex;flex-direction:column;gap:5px}
+.mini-lab{font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--ink-faint)}
+.mini-lab.a{color:var(--prod);font-weight:600}
+.mini-lab.b{color:var(--row);font-weight:600}
+.mini-cells{display:flex;gap:2px}
+.mini-cells i{
+  width:13px;height:13px;border-radius:2px;display:block;
+  background:var(--panel-2);border:1px solid var(--line-soft);
+}
+.mini-cells i.a{background:var(--prod);border-color:var(--prod)}
+.mini-cells i.b{background:var(--row);border-color:var(--row)}
+
+@media (max-width:960px){
+  .stage{grid-template-columns:1fr}
+  .termcard{position:static}
+}

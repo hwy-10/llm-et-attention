@@ -1,16 +1,9 @@
 """자원 · 주파수를 감안한 손익분기 — 배경지식 가이드 6.3-(4)절
 
-조기 종단은 공짜가 아니다.
-
     비용 : 제어 논리 LUT, 동작 주파수 저하, 파이프라인 빈 구간
     이득 : 연산 사이클 감소, 메모리 읽기 감소
 
-★ 사이클만 보면 안 된다 ★
-Fmax 가 20% 떨어지고 사이클이 25% 줄면 실효 이득은 거의 0이다.
-
     실효 speedup = (cycles_기준 / cycles_제안) x (fmax_제안 / fmax_기준)
-
-이 계산이 이 프로젝트의 결론에 해당한다.
 """
 
 from __future__ import annotations
@@ -18,6 +11,20 @@ from __future__ import annotations
 from dataclasses import dataclass, replace
 
 import numpy as np
+
+from src.config import read_fields
+
+
+# config/hardware.yaml -> ResourceReport 배선. (필드, 변환) — 섹션은 설계별로 다르다
+_FIELDS = (
+    ("lut", int),
+    ("ff", int),
+    ("dsp", int),
+    ("bram36", float),
+    ("fmax_mhz", float),
+    ("dynamic_power_mw", float),
+    ("source", str),
+)
 
 
 @dataclass(frozen=True)
@@ -35,20 +42,19 @@ class ResourceReport:
 
     @classmethod
     def from_config(cls, cfg, design_key: str) -> "ResourceReport":
-        r = (cfg.get(f"hardware.resources.{design_key}", {}) or {})
-        return cls(
-            name=design_key,
-            lut=int(r.get("lut", 0)),
-            ff=int(r.get("ff", 0)),
-            dsp=int(r.get("dsp", 0)),
-            bram36=float(r.get("bram36", 0.0)),
-            fmax_mhz=float(r.get("fmax_mhz", 0.0)),
-            dynamic_power_mw=float(r.get("dynamic_power_mw", 0.0)),
-            source=str(r.get("source", "estimate")),
+        # 섹션이 없으면 전부 0 이 되어 speedup 0.0 · latency inf 로 조용히 흘러간다.
+        # read_fields 가 ConfigDefaultWarning 을 남긴다.
+        wiring = tuple(
+            (f, f"hardware.resources.{design_key}.{f}", c) for f, c in _FIELDS
         )
+        return replace(cls(**read_fields(cfg, cls, wiring)), name=design_key)
 
     def derate(self, factor: float) -> "ResourceReport":
-        """Fmax 를 factor 배로 낮춘 가상 보고서 (민감도 분석용)."""
+        """Fmax 를 factor 배로 조정한 가상 보고서 (민감도 분석용).
+
+        1.0 미만은 비관, 초과는 낙관 시나리오다. 아래쪽만 쓸면 손익분기선을
+        지나지 않아 결론이 어디서 뒤집히는지 알 수 없다.
+        """
         return replace(self, fmax_mhz=self.fmax_mhz * factor, source=f"{self.source}+derate")
 
 
@@ -57,8 +63,13 @@ def effective_speedup(
     cycles_ref: float, fmax_ref: float, cycles_new: float, fmax_new: float
 ) -> float:
     """실효 속도 배율. 1.0 보다 커야 이득이다."""
-    if cycles_new <= 0 or fmax_ref <= 0:
-        return 0.0
+
+    # 0.0 을 돌려주면 "무한히 느리다" 와 구분이 안 된다.
+    # 자원 섹션을 못 읽었을 때가 정확히 이 모양이라 조용히 결론이 뒤집힌다.
+    if cycles_new <= 0:
+        raise ValueError(f"cycles_new = {cycles_new}: must be > 0")
+    if fmax_ref <= 0:
+        raise ValueError(f"fmax_ref = {fmax_ref} MHz: must be > 0 (resource report empty?)")
     return (cycles_ref / cycles_new) * (fmax_new / fmax_ref)
 
 
@@ -124,7 +135,9 @@ def compare(
 def control_overhead(seq_no_et: ResourceReport, with_et: ResourceReport) -> dict:
     """조기 종단 제어 회로만의 오버헤드.
 
-    BitStopper[4] 가 6.9% 로 보고한 항목과 같은 기준으로 비교할 수 있다.
+    ★ BitStopper[4] 의 6.9% 는 area 가 아니라 **power** 다 (README 참조).
+    비교 상대는 ``control_power_overhead`` 이지 ``control_lut_overhead`` 가 아니다.
+    블록 두 그룹을 합치면 10~12% 라는 정정도 함께 봐야 한다.
     """
     lut_ov = (with_et.lut - seq_no_et.lut) / seq_no_et.lut if seq_no_et.lut else 0.0
     pw_ov = (
@@ -155,4 +168,8 @@ def breakeven_curve(
     """
     cn = np.asarray(cycles_new_list, dtype=np.float64)[:, None]
     fr = np.asarray(fmax_ratio_list, dtype=np.float64)[None, :]
+
+    # 0 이 섞이면 inf 가 격자에 퍼져 등고선이 엉뚱한 자리에 그려진다
+    if np.any(cn <= 0):
+        raise ValueError("cycles_new_list has a non-positive entry")
     return (cycles_ref / cn) * fr

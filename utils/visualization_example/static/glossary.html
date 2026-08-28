@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>용어 사전 — 같은 그림 위에 겹쳐 본다</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/style.css">
+<link rel="stylesheet" href="/static/glossary.css">
+</head>
+<body>
+
+<div class="wrap">
+
+  <header>
+    <nav class="pagenav">
+      <a href="/">행렬 곱</a>
+      <a href="/schedule">조기 종단 스케줄</a>
+      <a href="/schedule_py">schedule.py 해부</a>
+      <span aria-current="page">용어 사전</span>
+      <a href="/depgraph">코드 상관관계</a>
+    </nav>
+    <p class="eyebrow">Glossary</p>
+    <h1>같은 그림 위에 겹쳐 본다</h1>
+    <p class="lede">
+      이 프로젝트의 용어는 대부분 <b>같은 격자에 산다.</b>
+      토큰은 <b class="k-col">열</b>, 비트평면은 <b class="k-row">행</b>,
+      레인과 BRAM 워드는 <b class="k-prod">둘 다 행의 가로 덩어리</b>다.
+      <span class="note">
+        용어마다 그림을 따로 그리면 이 겹침이 안 보인다. 그런데 <b>겹침이야말로 헷갈리는 지점이다</b> —
+        레인과 워드는 실제 설정에서 둘 다 32라 모양으로는 구분이 안 간다.
+      </span>
+    </p>
+  </header>
+
+  <div class="banner" id="banner" role="alert" hidden></div>
+
+  <!-- ================= 캔버스 ================= -->
+  <section class="stage">
+    <div class="canvas-wrap">
+      <div class="canvas-head">
+        <span class="ctag" id="canvasTag">평면 × 토큰</span>
+        <span class="chint" id="canvasHint"></span>
+      </div>
+      <div class="canvas-scroll">
+        <div class="canvas" id="canvasGrid"></div>
+        <div class="canvas" id="canvasBracket" hidden></div>
+        <div class="canvas" id="canvasVector" hidden></div>
+      </div>
+      <p class="scale-note" id="scaleNote"></p>
+    </div>
+
+    <div class="termcard" id="termcard"></div>
+  </section>
+
+  <!-- ================= 용어 목록 ================= -->
+  <section>
+    <h2 class="sec-h">용어 — 누르면 위 그림에 표시된다</h2>
+    <div class="glist" id="glist"></div>
+  </section>
+
+  <!-- ================= 헷갈리는 짝 ================= -->
+  <section>
+    <h2 class="sec-h">★ 헷갈리기 쉬운 짝</h2>
+    <p class="sec-note">
+      두 용어를 <b>같은 격자에 나란히</b> 올려 차이를 본다. 모양이 같아서 헷갈리는 것들이다.
+    </p>
+    <div class="pairs" id="pairs"></div>
+  </section>
+
+  <footer>
+    <h2>이 페이지의 쓰임</h2>
+    <p>
+      새로 합류한 사람이 <code>architecture.md</code> 나 코드를 읽다 막히는 지점은 대개
+      <b>용어 하나가 격자의 어디를 가리키는지</b> 모를 때다. 여기서 그 자리를 짚어 준다.
+    </p>
+    <p>
+      수치는 <code>config/hardware.yaml</code> 에서 읽어 온다 — 손으로 베끼면 설정이 바뀔 때
+      사전이 조용히 낡는다. 그림은 축소판이지만 <b>레인 == 워드 관계는 그대로 유지</b>했다.
+      그게 요점이기 때문이다.
+    </p>
+    <p class="dim">
+      용어를 추가하려면 <code>utils/visualization_example/glossary.py</code> 의
+      <code>_TERMS</code> 에 항목을 넣으면 된다. <code>confuse</code> 로 헷갈리는 짝을 걸어 두면
+      카드에 링크가 생긴다.
+    </p>
+  </footer>
+
+</div>
+
+<script src="/static/glossary.js"></script>
+</body>
+</html>

@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>행과 열이 만나는 자리 — 행렬 곱 시각화</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<div class="wrap">
+
+  <header>
+    <nav class="pagenav">
+      <span aria-current="page">행렬 곱</span>
+      <a href="/schedule">조기 종단 스케줄</a>
+      <a href="/schedule_py">schedule.py 해부</a>
+      <a href="/glossary">용어 사전</a>
+      <a href="/depgraph">코드 상관관계</a>
+    </nav>
+    <p class="eyebrow">Matrix Product · <span id="backend">…</span></p>
+    <h1>행과 열이 만나는 자리</h1>
+    <p class="lede">
+      A의 <b class="k-row">행</b> 하나와 B의 <b class="k-col">열</b> 하나가 만나 C의 칸 하나를 만든다.
+      어느 칸이든 누르면 <b>그 값이 어디서 왔는지 선으로 이어서</b> 보여 준다.
+      <span class="note">화면의 모든 숫자는 파이썬이 계산해 보내 준 값이다 — 브라우저는 산술을 하지 않는다.</span>
+    </p>
+  </header>
+
+  <div class="banner" id="banner" role="alert" hidden></div>
+
+  <section class="controls" aria-label="설정">
+    <div class="ctl-group">
+      <span class="ctl-label">A 행 <i>i</i></span>
+      <div class="stepper" data-dim="m">
+        <button type="button" data-d="-1" aria-label="A 행 줄이기">−</button>
+        <span class="val" id="valm">5</span>
+        <button type="button" data-d="1" aria-label="A 행 늘리기">+</button>
+      </div>
+    </div>
+    <div class="ctl-group">
+      <span class="ctl-label">공통 <i>k</i></span>
+      <div class="stepper" data-dim="n">
+        <button type="button" data-d="-1" aria-label="공통 차원 줄이기">−</button>
+        <span class="val" id="valn">4</span>
+        <button type="button" data-d="1" aria-label="공통 차원 늘리기">+</button>
+      </div>
+    </div>
+    <div class="ctl-group">
+      <span class="ctl-label">B 열 <i>j</i></span>
+      <div class="stepper" data-dim="p">
+        <button type="button" data-d="-1" aria-label="B 열 줄이기">−</button>
+        <span class="val" id="valp">3</span>
+        <button type="button" data-d="1" aria-label="B 열 늘리기">+</button>
+      </div>
+    </div>
+    <div class="spacer"></div>
+    <button class="btn" id="btnRand" type="button">값 새로 뽑기</button>
+    <button class="btn" id="btnEdit" type="button" aria-pressed="false">값 직접 입력</button>
+    <button class="btn" id="btnPlay" type="button" aria-pressed="false">항별로 재생</button>
+  </section>
+
+  <section class="board-scroll">
+    <div class="board" id="board">
+      <svg id="guides" aria-hidden="true"></svg>
+
+      <div class="mat-block">
+        <div class="mat-name n-a">행렬 <b>A</b> <em id="dimA"></em></div>
+        <div class="grid" id="matA" aria-label="행렬 A"></div>
+      </div>
+
+      <div class="op" aria-hidden="true">·</div>
+
+      <div class="mat-block">
+        <div class="mat-name n-b">행렬 <b>B</b> <em id="dimB"></em></div>
+        <div class="grid" id="matB" aria-label="행렬 B"></div>
+      </div>
+
+      <div class="op" aria-hidden="true">=</div>
+
+      <div class="mat-block">
+        <div class="mat-name n-c">결과 <b>C</b> <em id="dimC"></em></div>
+        <div class="grid" id="matC" aria-label="결과 행렬 C"></div>
+      </div>
+    </div>
+  </section>
+
+  <p class="legend">
+    <span class="lg-row"><i></i>A의 <b>i</b>번째 행</span>
+    <span class="lg-col"><i></i>B의 <b>j</b>번째 열</span>
+    <span class="lg-prod"><i></i>둘이 만드는 C[i][j] · 짝지어진 k</span>
+  </p>
+
+  <section class="calc" id="calc" aria-live="polite"></section>
+
+  <footer>
+    <h2>세 행렬이 인덱스로 묶여 있다</h2>
+    <p>
+      거터의 <code>i</code>·<code>j</code>·<code>k</code> 가 실제 연결이다.
+      <b>A의 열 번호와 B의 행 번호는 같은 <code>k</code></b> — 그래서 두 행렬을 곱할 수 있고,
+      k를 고르면 양쪽이 동시에 보라색으로 짝지어진다. 반면 <code>i</code>는 A와 C가,
+      <code>j</code>는 B와 C가 공유한다.
+    </p>
+    <p>
+      아래 계산판은 고른 행과 열을 <b>벡터 두 개로 뽑아 세로로 맞춰</b> 놓은 것이다.
+      위아래로 곱해 더하면 그게 곧 C의 그 칸이다. <b>누적</b> 줄은 누산기가 k 단계까지
+      들고 있는 값이라, 내적이 한 번에 나오는 값이 아니라 순차 누산이라는 것이 보인다.
+    </p>
+    <p class="dim">
+      계산은 <code>utils/visualization_example/matmul.py</code> 가 한다.
+      항별 분해를 numpy 의 <code>A @ B</code> 와 매 요청 대조하므로,
+      화면에 틀린 숫자가 뜨면 그 자리에서 오류가 난다.
+    </p>
+  </footer>
+
+</div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>

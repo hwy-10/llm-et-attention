@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>레인이 비는 자리 — 조기 종단 스케줄</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/style.css">
+<link rel="stylesheet" href="/static/schedule.css">
+</head>
+<body>
+
+<div class="wrap">
+
+  <header>
+    <nav class="pagenav">
+      <a href="/">행렬 곱</a>
+      <span aria-current="page">조기 종단 스케줄</span>
+      <a href="/schedule_py">schedule.py 해부</a>
+      <a href="/glossary">용어 사전</a>
+      <a href="/depgraph">코드 상관관계</a>
+    </nav>
+    <p class="eyebrow">src/schedule.py · 배경지식 가이드 6.3-(2)</p>
+    <h1>레인이 비는 자리</h1>
+    <p class="lede">
+      토큰마다 종단 시점이 다르면 <b>파이프라인에 빈 구간이 생긴다.</b>
+      정책이 다르다는 건 그 빈 구간을 어떻게 메우느냐가 다르다는 뜻이다.
+      아래는 <b>사이클 하나하나에 어느 토큰이 어느 레인에 실리는지</b>를 그대로 그린 것이다.
+      그리고 그 옆에 <b>BRAM 읽기가 몇 사이클을 먹는지</b>를 함께 둔다 — 연산만 줄여도
+      메모리가 더 오래 걸리면 전체 시간은 그대로다.
+      <span class="note">
+        사이클 수는 <code>src/schedule.py</code> 의 <code>apply()</code> 가 낸 값이고,
+        타임라인 길이가 그 값과 다르면 서버가 그림을 그리지 않고 오류를 낸다.
+      </span>
+    </p>
+  </header>
+
+  <div class="banner" id="banner" role="alert" hidden></div>
+
+  <!-- ================= 정책 탭 ================= -->
+  <section>
+    <div class="tabs" id="tabs" role="tablist"></div>
+    <p class="sec-note" id="tabNote"></p>
+  </section>
+
+  <!-- ================= ★ 실행 타임라인 ================= -->
+  <section>
+    <div class="tl-head">
+      <h2 class="sec-h">★ 실행 타임라인 — 사이클 × 레인</h2>
+      <div class="tl-tools">
+        <button class="btn" id="btnPlay" type="button" aria-pressed="false">사이클 재생</button>
+        <button class="btn" id="btnAll" type="button">전부 보기</button>
+      </div>
+    </div>
+    <div class="tl-stat" id="tlStat"></div>
+    <div class="timebars" id="timebars"></div>
+    <div class="tl-legend">
+      <span><i class="sw live"></i>살아있는 토큰을 처리</span>
+      <span><i class="sw waste"></i>이미 종단됐는데 끌려온 토큰 — <b>회수 못 한 종단</b></span>
+      <span><i class="sw empty"></i>빈 레인 (버블)</span>
+      <span><i class="sw comp"></i>압축 오버헤드</span>
+    </div>
+    <div class="tl-scroll"><div class="timeline" id="timeline"></div></div>
+  </section>
+
+  <!-- ================= 토큰 수명 ================= -->
+  <section>
+    <h2 class="sec-h">토큰 수명 — 누가 언제 죽는가</h2>
+    <p class="sec-note">
+      토큰 하나를 <b>누르면</b> 위 타임라인에서 그 토큰이 실린 슬롯을 전부 표시한다.
+      종단된 뒤에도 슬롯을 차지하고 있다면 그 정책은 종단을 회수하지 못한 것이다.
+    </p>
+    <div class="life-scroll"><div class="life" id="life"></div></div>
+  </section>
+
+  <!-- ================= BRAM ================= -->
+  <section>
+    <h2 class="sec-h">BRAM 워드 읽기 — 사이클과 따로 논다</h2>
+    <p class="sec-note">
+      평면마다 <b>워드 안에 살아있는 토큰이 하나라도 있으면 워드 전체를 읽는다.</b>
+      그래서 흩어져 죽으면 토큰이 줄어도 워드는 안 줄어든다. 평면을 눌러 아래에서 비교해 보라.
+    </p>
+    <div class="bram-scroll"><div class="bram" id="bram"></div></div>
+    <div class="hero" id="hero"></div>
+  </section>
+
+  <!-- ================= 조작 ================= -->
+  <section>
+    <h2 class="sec-h">설정</h2>
+    <div class="panels">
+      <div class="panel">
+        <h2 class="panel-h">종단 패턴 <span>무엇이 죽는가</span></h2>
+        <label class="ctl">
+          <span class="ctl-name">토큰 수 <i>T</i> <b id="v_n_tokens">128</b></span>
+          <input type="range" id="n_tokens" min="8" max="512" step="8" value="128">
+          <span class="ctl-hint">디코드 스텝의 활성 토큰 수 = 문맥 길이. 실제 목표는 512 까지</span>
+        </label>
+        <label class="ctl">
+          <span class="ctl-name">비트평면 수 <b id="v_n_planes">8</b></span>
+          <input type="range" id="n_planes" min="2" max="16" step="1" value="8">
+          <span class="ctl-hint">INT8 이면 8</span>
+        </label>
+        <label class="ctl">
+          <span class="ctl-name">평면당 생존율 <b id="v_survival">0.62</b></span>
+          <input type="range" id="survival" min="0.20" max="1.00" step="0.02" value="0.62">
+          <span class="ctl-hint">1.00 이면 아무도 종단되지 않는다 (= 설계 ②)</span>
+        </label>
+        <label class="ctl ctl-star">
+          <span class="ctl-name">★ 생존 토큰의 배치 <b id="v_clustering">흩어짐 0.00</b></span>
+          <input type="range" id="clustering" min="0" max="1" step="0.05" value="0">
+          <span class="ctl-hint">
+            생존 토큰의 <b>개수는 전혀 바뀌지 않는다.</b> 위치만 바꾼다 —
+            그런데 BRAM 워드 수가 크게 움직인다.
+          </span>
+        </label>
+      </div>
+
+      <div class="panel">
+        <h2 class="panel-h">하드웨어 <span>config/hardware.yaml</span></h2>
+        <label class="ctl">
+          <span class="ctl-name">lanes <b id="v_lanes">32</b></span>
+          <input type="range" id="lanes" min="1" max="128" step="1" value="32">
+          <span class="ctl-hint">한 사이클에 처리하는 토큰 수 = 타임라인의 가로 칸 수. <b>실제 32</b></span>
+        </label>
+        <label class="ctl">
+          <span class="ctl-name">word_tokens <b id="v_word_tokens">32</b></span>
+          <input type="range" id="word_tokens" min="1" max="128" step="1" value="32">
+          <span class="ctl-hint">BRAM 워드 하나에 묶이는 토큰 수 — 절감의 알갱이 크기. <b>실제 32</b></span>
+        </label>
+        <label class="ctl ctl-star">
+          <span class="ctl-name">★ BRAM 포트 수 <b id="v_n_ports">2</b></span>
+          <input type="range" id="n_ports" min="1" max="16" step="1" value="2">
+          <span class="ctl-hint">
+            한 사이클에 읽을 수 있는 워드 수. <b>실제 2</b> —
+            <code>메모리 사이클 = ceil(워드 / 포트)</code>
+          </span>
+        </label>
+        <label class="ctl-check">
+          <input type="checkbox" id="mem_overlap" checked>
+          <span>
+            <b>연산과 메모리가 겹친다고 본다</b>
+            <em>켜짐: 총 = max(연산, 메모리) · 꺼짐: 총 = 연산 + 메모리.
+            <b>RTL 실측으로 확정할 가정</b>이므로 양쪽 다 보고 결론이 뒤집히는지 확인할 것.</em>
+          </span>
+        </label>
+        <label class="ctl">
+          <span class="ctl-name">batch_size <b id="v_batch_size">32</b></span>
+          <input type="range" id="batch_size" min="1" max="256" step="1" value="32">
+          <span class="ctl-hint"><b>실제 32</b></span>
+        </label>
+        <label class="ctl">
+          <span class="ctl-name">two_phase_split <b id="v_two_phase_split">3</b></span>
+          <input type="range" id="two_phase_split" min="1" max="16" step="1" value="3">
+          <span class="ctl-hint">1단계에서 전체 스캔할 앞쪽 평면 수. <b>실제 3</b></span>
+        </label>
+        <label class="ctl">
+          <span class="ctl-name">압축 오버헤드 <b id="v_compaction_cost_cycles">2</b></span>
+          <input type="range" id="compaction_cost_cycles" min="0" max="16" step="1" value="2">
+          <span class="ctl-hint">compaction 은 평면마다, two_phase 는 한 번만 낸다. <b>실제 2</b></span>
+        </label>
+      </div>
+    </div>
+
+    <h3 class="preset-h">상황별로 바로 보기</h3>
+    <div class="presets" id="presets">
+      <button class="preset" type="button" data-preset="real">
+        <b>실제 프로젝트 스펙</b>
+        <span id="realHint">config/hardware.yaml 그대로 · 문맥 128토큰</span>
+      </button>
+      <button class="preset" type="button" data-preset="tiny">
+        <b>한눈에 보기 (작게)</b>
+        <span>16토큰 · 4레인 — 타임라인 전체가 한 화면에 들어온다</span>
+      </button>
+      <button class="preset" type="button" data-preset="scattered">
+        <b>종단이 <u>흩어져</u> 일어날 때</b>
+        <span>batch 는 워드를 하나도 못 줄이고, compaction 만 줄인다</span>
+      </button>
+      <button class="preset" type="button" data-preset="clustered">
+        <b>종단이 <u>뭉쳐서</u> 일어날 때</b>
+        <span>batch 만으로도 compaction 과 같은 절감을 얻는다</span>
+      </button>
+      <button class="preset" type="button" data-preset="noterm">
+        <b>종단이 <u>거의 없을</u> 때</b>
+        <span>압축은 비용만 남긴다 — 종단을 쓸수록 손해가 되는 구간</span>
+      </button>
+      <button class="preset" type="button" data-preset="membound">
+        <b>메모리가 <u>병목</u>이 될 때</b>
+        <span>워드가 레인보다 좁으면 연산을 줄여도 시간이 안 준다 — 권장 정책이 뒤집힌다</span>
+      </button>
+      <button class="preset" type="button" data-preset="partial">
+        <b>batch 가 <u>헛도는</u> 조건</b>
+        <span>마지막 묶음이 작으면 토큰 없는 빈 사이클이 생긴다 (모델 결함)</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ================= 요약 ================= -->
+  <section>
+    <h2 class="sec-h">네 정책 요약 — 지금 설정에서는 무엇이 유리한가</h2>
+    <div class="verdict" id="verdict"></div>
+    <div class="table-scroll"><table class="nums" id="nums"></table></div>
+
+    <h3 class="preset-h">상황별 정리</h3>
+    <div class="table-scroll"><table class="nums guide">
+      <thead><tr><th>상황</th><th>유리한 정책</th><th>왜</th></tr></thead>
+      <tbody>
+        <tr data-sit="no_gain"><td class="k">종단이 거의 없다</td><td><b>none</b> · batch</td>
+          <td class="k">회수할 것이 없는데 압축 비용만 낸다. 제어가 단순한 쪽이 낫다</td></tr>
+        <tr data-sit="clustered"><td class="k">종단이 <b>뭉쳐서</b> 일어난다</td><td><b>batch</b></td>
+          <td class="k">재배치 없이도 워드를 통째로 건너뛴다. 압축 비용이 순손해</td></tr>
+        <tr data-sit="scattered"><td class="k">종단이 <b>흩어져</b> 일어난다</td><td><b>compaction</b></td>
+          <td class="k">★ 워드 절감을 얻는 유일한 방법. 사이클은 별로 안 줄어도 메모리는 크게 준다</td></tr>
+        <tr data-sit="scattered_costly"><td class="k">흩어지는데 압축이 비싸다</td><td><b>two_phase</b></td>
+          <td class="k">압축을 한 번만 내고도 절감 대부분을 유지한다</td></tr>
+      </tbody>
+    </table></div>
+    <p class="sec-note" style="margin-top:10px">
+      표의 강조된 줄이 <b>지금 설정에 해당하는 상황</b>이다. 설정을 바꾸면 따라 움직인다.
+    </p>
+  </section>
+
+  <footer>
+    <h2>타임라인에서 읽을 것</h2>
+    <p>
+      <b>유효 슬롯(보라)의 개수는 네 정책이 모두 같다.</b> 해야 할 일의 양은 정책이 바꾸지 못한다.
+      달라지는 것은 그 일을 <b>몇 사이클에 담느냐</b>뿐이다 — 그래서 회색(끌려온 종단 토큰)과
+      빈칸(버블)이 적을수록 좋은 정책이다.
+    </p>
+    <p>
+      <code>none</code>·<code>batch</code> 는 <b>회색</b>이 많다. 종단된 토큰을 그대로 끌고 간다.
+      <code>compaction</code> 은 회색이 <b>0</b> 이지만 대신 압축 오버헤드 줄이 평면마다 끼어든다 —
+      종단이 적을 때는 이게 손해다. <code>two_phase</code> 는 압축 줄이 <b>한 번만</b> 나온다.
+    </p>
+    <p class="dim">
+      종단 패턴은 손잡이로 만든 <b>합성 입력</b>이다. 실제 분포는
+      <code>experiments/exp1_termination_profile.py</code> 와
+      <code>exp4_schedule_policy.py</code> 가 낸다. 이 페이지는 정책이 무엇을 하는지
+      이해하는 용도이지, 논문 수치를 내는 곳이 아니다.
+    </p>
+  </footer>
+
+</div>
+
+<script src="/static/schedule.js"></script>
+</body>
+</html>
