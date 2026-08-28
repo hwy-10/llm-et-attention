@@ -4,7 +4,7 @@
 하드웨어를 만드는 사람이 "왜 하필 Q·K^T 인가"에 답할 수 있을 만큼만 다루고,
 학습(training)이나 모델 구조 전반은 다루지 않는다.
 
-> 설계 자체는 [architecture.md](../../architecture.md) 를 보면 된다. 이 문서는 그 앞단이다.
+> 설계 자체는 [architecture.md](../architecture.md) 를 보면 된다. 이 문서는 그 앞단이다.
 
 ---
 
@@ -159,33 +159,97 @@ KV 캐시 크기 = 2 (K와 V) × 계층 수 × KV head 수 × head 차원 × 길
 
 3번을 하려면 "이 토큰은 상위에 못 든다"를 **다 읽기 전에** 알아야 한다.
 그 방법이 상위 비트부터 계산하면서 점수의 가능 범위를 좁혀 가는 것이고,
-자세한 내용은 [architecture.md §3](../../architecture.md) 에 있다.
+자세한 내용은 [architecture.md §3](../architecture.md) 에 있다.
 
 ---
 
 ## 8. 용어 대조표
 
-| 한국어 | English | 이 프로젝트에서 |
+### 8-1. 이 문서에 나온 것
+
+| 한국어 | English | 나온 곳 | 이 프로젝트에서 |
+|---|---|---|---|
+| 질의·키·값 | query, key, value | §2 | **Q 와 K 만** 쓴다. `QKSnapshot` 은 `q`, `k` 두 배열뿐이고 **V 는 코드에 없다** |
+| 어텐션 점수 | attention score | §3 ① | `S = Q·K^T`. 가속 대상은 이 한 줄뿐이다 |
+| head 차원 | head dim, `d` | §3 | 64. `config/model.yaml: model.head_dim` — 부분 내적의 누산 폭이기도 하다 |
+| 인과 마스킹 | causal masking | §3 ② | 마스크 배열이 따로 없다. 스텝마다 앞쪽 `n_active` 개만 잘라 쓴다 (`src/decode_loop.py`) |
+| 정규화 | softmax | §3 ③ | 범위 밖. 종단이 다 끝난 뒤 `src/decode_loop.py` 의 `_softmax` 가 **손실 측정용으로만** 부른다 |
+| 그룹 질의 어텐션 | GQA | §4 | KV head 8개. `config/model.yaml: model.n_kv_heads` |
+| 채우기 단계 | prefill | §5 | 범위 밖. 코드에는 `decode.warmup_tokens = 32` 하나로만 남는다 — "여기까지는 이미 차 있다" |
+| 생성 단계 | decode | §5 | ★ 대상. **스텝 하나 = 쿼리 하나 = `StepBounds` 하나** |
+| KV 캐시 | KV cache | §6 | `src/memory.py` 의 `kv_cache_bytes` · `capacity_report` |
+| 양자화 | quantization | §6 | **저장 양자화만.** K 와 Q 를 INT8 로 (`src/quantize.py`). 가중치는 손대지 않는다 |
+
+### 8-2. 설계로 넘어가면 나오는 것
+
+여기서는 이름만 확인하면 된다. 정의는 [architecture.md](../architecture.md) 와
+데모의 용어 사전 페이지(`python -m utils.visualization_example` → `/glossary`)에 있다.
+
+| 한국어 | English | 한 줄 |
 |---|---|---|
-| 어텐션 점수 | attention score | `S = Q·K^T`, 가속 대상 |
+| 비트평면 | bit-plane (문헌에 따라 bit-slice) | 여러 정수의 **같은 자리** 비트를 모은 한 장 |
 | 상위 비트 우선 | MSB-first | 비트평면을 b7 부터 처리 |
-| 비트평면 | bit-plane | 여러 정수의 같은 자리 비트를 모은 한 장 |
-| 조기 종단 | early termination | 상한이 θ 아래면 중단 |
+| 잔여 상한 | `R_m` | 남은 평면이 더 보탤 수 있는 최대치. `src/bounds.py: StepBounds.r` |
+| 문턱 | θ, theta | 종단 판정의 기준선. `src/threshold.py: ThetaTracker` |
+| 조기 종단 | early termination | 상한이 θ 아래로 확정되면 그 토큰은 더 읽지 않는다 |
 | 분기 한정 | branch and bound | 상·하한으로 후보를 쳐내는 구조 |
-| 상위 k 선택 | top-k selection | 종단이 곧 top-k 선택기 |
-| 채우기 단계 | prefill | 범위 밖 |
-| 생성 단계 | decode | ★ 이 프로젝트의 대상 |
+| 읽기 마스크 | `read_live` | 종단 결과가 메모리 회계로 넘어가는 **유일한** 접점 |
+
+### 8-3. ★ 이름이 겹치는 것 — 여기서는 뜻이 다르다
+
+아래 넷은 LLM 문헌에서 **다른 뜻으로 더 자주** 쓰인다. 옮겨 읽으면 그대로 오해가 된다.
+
+| 말 | 흔히 쓰는 뜻 | 여기서의 뜻 |
+|---|---|---|
+| **top-k** | 다음 단어를 뽑을 때 어휘 상위 k 개만 후보로 남기는 **샘플링** | 한 스텝 안에서 점수 상위 k 개 **토큰**. 어휘가 아니라 캐시의 토큰이고, 샘플링과 아무 관계가 없다 (`config/sweeps.yaml: top_k`) |
+| **decode** | encoder–decoder 구조의 **decoder** — 모델의 절반 | 추론의 **단계** 이름 (§5). Llama 는 decoder-only 라 구조 쪽에는 가를 것이 없다 |
+| **early exit** | 계층을 건너뛰고 일찍 출력 — **모델 자체가 바뀐다** | 우리 종단은 **읽기를 멈추는 것**이다. 계층도 토큰도 버리지 않는다 (§6) |
+| **score** | softmax 전(`S`)과 후(`A`) 양쪽에 쓴다 | θ 와 비교하는 것은 **softmax 전 정수 `S`** 다 |
+
+> 마지막 줄이 특히 중요하다. **종단 판정은 정수 위에서만 일어난다.**
+> `s_m`, 상한, 하한, θ 가 전부 같은 정수 눈금 위에 있어서 "이 토큰은 못 든다"가
+> 부등식으로 증명된다. 실수 복원(`accumulator.py: to_real_scores`)은 그 판정이
+> 끝난 **뒤에** 손실을 재려고 하는 일이다.
 
 ---
 
 ## 9. 더 볼 것
 
+### 다음에 읽을 것
+
+| 순서 | 문서 | 여기 어느 절을 잇는가 |
+|---|---|---|
+| 1 | [attention_walkthrough.md](attention_walkthrough.md) §3~4 | §3 의 네 단계를 4토큰 숫자로 직접 따라간다. **§4 에서 비트평면 종단까지 간다** |
+| 2 | [llama_3_2_1b.md](llama_3_2_1b.md) §4 | §6 의 KV 캐시 크기 식에 실제 숫자를 넣는다 |
+| 3 | [architecture.md](../architecture.md) §1~3 | 설계. 여기부터는 배경이 아니라 우리가 만드는 것이다 |
+
+### 원 논문 — 어디만 봐도 되는지 함께 적는다
+
 * Vaswani et al., **"Attention Is All You Need"**, NeurIPS 2017 —
-  [arXiv:1706.03762](https://arxiv.org/abs/1706.03762) · 원 논문
+  [arXiv:1706.03762](https://arxiv.org/abs/1706.03762)
+  · *Scaled Dot-Product Attention* 절만. §1·§3 의 `S = Q·K^T/√d` 가 거기서 나온다
+* Shazeer, **"Fast Transformer Decoding: One Write-Head is All You Need"**, 2019 —
+  [arXiv:1911.02150](https://arxiv.org/abs/1911.02150)
+  · ★ **§5 주장의 원 출처.** 증분 디코딩이 왜 연산이 아니라 메모리 대역폭에 묶이는지를
+  처음 수식으로 보인 글이고, MQA 는 그 결론에서 나온 처방이다 (§4 표 3행)
+* Pope et al., **"Efficiently Scaling Transformer Inference"**, MLSys 2023 —
+  [arXiv:2211.05102](https://arxiv.org/abs/2211.05102)
+  · §5 표의 근거. prefill 과 decode 를 arithmetic intensity 로 가른다
 * Ainslie et al., **"GQA: Training Generalized Multi-Query Transformer Models
   from Multi-Head Checkpoints"**, EMNLP 2023 —
   [arXiv:2305.13245](https://arxiv.org/abs/2305.13245) · §4 의 GQA
+* Zhang et al., **"H2O: Heavy-Hitter Oracle for Efficient Generative Inference"**,
+  NeurIPS 2023 — [arXiv:2306.14048](https://arxiv.org/abs/2306.14048)
+  · §3 의 "상위 몇 개가 출력을 지배한다"를 실제로 측정한 글. 다만 **저쪽은 버리고
+  우리는 안 버린다** — §6 의 가지치기와 조기 종단의 차이가 여기서 갈린다
 * Liu et al., **"KIVI: A Tuning-Free Asymmetric 2bit Quantization for KV Cache"**,
   ICML 2024 — [arXiv:2402.02750](https://arxiv.org/abs/2402.02750) · §6 의 양자화
 
-선행연구 전반은 [related_work.md](../../related_work.md) 에 정리되어 있다.
+§4 의 Llama 3.2 1B 수치(계층 16 · KV head 8 · head 차원 64)는 모델 카드에서 온 것이고,
+[llama_3_2_1b.md](llama_3_2_1b.md) §2 에 `config/model.yaml` 과 대조해 두었다.
+
+### 선행연구
+
+위 여섯은 **배경**이다. 우리 설계와 직접 겨루는 논문 — 같은 MSB-first 종단을
+먼저 한 것들 — 은 [related_work.md](../related_work.md) 에 따로 정리되어 있다.
+발표를 준비한다면 그쪽이 먼저다.

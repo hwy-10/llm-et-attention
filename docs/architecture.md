@@ -3,7 +3,7 @@
 이 문서는 아래 조감도 한 장을 글로 풀어쓴 것이다.
 **설계 자체**를 설명한다. 
 
-![프로젝트 전체 조감도](slides/architecture/00_overview.svg)
+![프로젝트 전체 조감도](../slides/architecture/00_overview.svg)
 
 
 조감도에서 **제안 설계가 프로젝트에서 만들 부분**이고, 왼쪽은 전제, 오른쪽은 검증이다.  
@@ -41,7 +41,7 @@ Decode 단계는 쓰기 1회, 읽기 N회로 메모리 접근이 병목이 된�
 
 어텐션 전체가 아니라 **1단계 점수 계산만** 다룬다.  
 softmax 와 V 행렬 곱은 범위 밖이다.
-> 📘 Transformer와 Self-Attention의 기본 개념은 [Transformer 배경지식](docs/background/transformer.md)을 참고하세요.
+> 📘 Transformer와 Self-Attention의 기본 개념은 [Transformer 배경지식](background/transformer.md)을 참고하세요.
 ### 1-2. Decode 단계 — 쓰기 1 : 읽기 N
 
 LLM 추론은 성격이 다른 두 단계로 나뉜다.
@@ -65,7 +65,7 @@ LLM 추론은 성격이 다른 두 단계로 나뉜다.
 
 범위를 이렇게 좁힌 것은 선택이 아니라 제약이다. 전체 모델의 KV 캐시는 INT8 T=512 기준
 8 MB 로 온칩 BRAM 에 들어가지 않지만, 한 계층·한 헤드의 K 는 32 KB 라 여유 있게 들어간다.
-> 📘 모델 스펙·성능과 이 계산의 근거는 [대상 모델 — Llama 3.2 1B](docs/background/llama_3_2_1b.md) 참고.
+> 📘 모델 스펙·성능과 이 계산의 근거는 [대상 모델 — Llama 3.2 1B](background/llama_3_2_1b.md) 참고.
 
 ### 1-4. 비트평면 저장
 
@@ -73,7 +73,7 @@ INT8 값 하나는 8개의 비트 b7 ~ b0로 이루어진다.
 일반적인 저장 방식에서는 이 8비트를 하나의 값으로 묶어 저장한다.  
 반면 비트평면(bit-plane) 저장​에서는 여러 INT8 값에서 같은 위치의 비트끼리 모아 별도의 평면으로 저장한다.
 
-![비트평면 저장 방식](slides/architecture/bitplane_layout.svg)
+![비트평면 저장 방식](../slides/architecture/bitplane_layout.svg)
 
 값 자체는 전혀 바뀌지 않고 메모리에 배치되는 방식만 달라진다.  
 이 차이가 중요한 이유는 필요한 비트만 선택적으로 읽을 수 있기 때문이다.   
@@ -94,7 +94,7 @@ INT8 값 하나는 8개의 비트 b7 ~ b0로 이루어진다.
 ## 2. 양자화 규약 — ★ 상한식이 서 있는 자리 ★
 
 조감도에는 안 나오지만, 2열 전체가 이 규약 위에 서 있다.
-[config/quant.yaml](config/quant.yaml) 이 이를 고정한다.
+[config/quant.yaml](../config/quant.yaml) 이 이를 고정한다.
 
 ### K는 unsigned 로 저장한다
 
@@ -347,7 +347,7 @@ BRAM은 토큰을 하나씩 읽지 않는다. 한 워드에 `word_tokens` 개 �
 | `read_saving_bram` | 실제 BRAM 워드 읽기 기준 — **실현** |
 
 이 격차가 work-compaction 이 필요한 진짜 이유다.
-자세한 그림은 [slides/architecture/05_finding.svg](slides/architecture/05_finding.svg) 참조.
+자세한 그림은 [slides/architecture/05_finding.svg](../slides/architecture/05_finding.svg) 참조.
 
 ### 6-2. 종단 시점의 불규칙성
 
@@ -387,18 +387,28 @@ BRAM은 토큰을 하나씩 읽지 않는다. 한 워드에 `word_tokens` 개 �
 
 ### 워드폭이 실현 절감을 깎는다 (이론 27.9%)
 
-| 워드폭 | batch | compaction |
-|---|---|---|
-| 1 | 27.9% (100%) | 27.9% (100%) |
-| 8 | 12.3% (44%) | 27.6% (99%) |
-| 32 | **3.8% (14%)** | **26.6% (95%)** |
-| 64 | 1.5% (5%) | 24.4% (87%) |
+| 워드폭 | batch | compaction | two_phase |
+|---|---|---|---|
+| 1 | 3.4% (12%) | 27.9% (100%) | 27.9% (100%) |
+| 8 | 3.4% (12%) | 27.6% (99%) | 12.3% (44%) |
+| 32 | **3.8% (14%)** | **26.6% (95%)** | 3.8% (14%) |
+| 64 | 1.5% (5%) | 24.4% (87%) | 1.5% (5%) |
+
+> **정정 (2026-08).** 이전 표의 `batch` 열은 사실 `two_phase` 의 값이었다.
+> 당시 `batch` 는 묶음이 살아 있어도 그 안의 죽은 토큰을 워드 회계에서 빼고 세어,
+> 압축 수준의 읽기 절감을 공짜로 가져가고 있었다. 사이클은 묶음 전체를 처리하는데
+> 워드는 산 토큰만 셌던 것이다. 고친 뒤의 값이 위 표이며,
+> `tests/test_memory.py::test_readme_word_width_table_is_reproducible` 이 재현을 고정한다.
 
 ### 정직하게 짚어야 할 것
 
-* 비트평면 순차 처리는 8사이클을 쓰므로 **①보다 사이클이 8배 많다**
+* 비트평면 순차 처리는 8사이클을 쓰므로 **①보다 연산 사이클이 8배 많다**
   (512 토큰 기준 4,305 → 34,440). 제안의 근거는 사이클이 아니라
   **DSP 미사용**과 **메모리 읽기 감소**다.
+* ★ 다만 **8배는 연산만 센 값**이다. ① 도 K 를 전부 읽어야 하고 그쪽이
+  17,220 사이클이라 ① 자신이 메모리 병목이다. BRAM 읽기를 포함해 같은 잣대로
+  재면 격차는 **8배가 아니라 2배**로 줄어든다 (17,220 → 34,440).
+  `mem_overlap` 이 RTL 로 확정되기 전까지는 두 축을 함께 적는다.
 * 추정 Fmax 기준 ② 대비 실효 speedup 이 0.93 으로 손익분기 미달이다.
   Vivado 실측으로 교체하기 전까지 이 결론은 **잠정적**이다.
 * 문맥이 길수록 유리하다 — 사이클 절감이 N=128 에서 −41%, N=512 에서 +10%.
@@ -423,24 +433,24 @@ BRAM은 토큰을 하나씩 읽지 않는다. 한 워드에 `word_tokens` 개 �
 
 | 조감도 블록 | 파일 |
 |---|---|
-| 비트평면 저장 | [src/quantize.py](src/quantize.py) |
-| 비트평면 BRAM | [src/memory.py](src/memory.py) |
-| 부분 내적 | [src/masked_sum.py](src/masked_sum.py) |
-| 누산 | [src/accumulator.py](src/accumulator.py) |
-| Q+ / Q- 레지스터 | [src/bounds.py](src/bounds.py) |
-| 종단 판정 | [src/terminator.py](src/terminator.py) |
-| θ 관리 | [src/threshold.py](src/threshold.py) |
-| 읽기 차단 · 압축 | [src/schedule.py](src/schedule.py) |
-| 4종 비교 | [src/designs.py](src/designs.py) |
-| 디코드 루프 | [src/decode_loop.py](src/decode_loop.py) |
-| 측정 | [utils/metrics.py](utils/metrics.py), [utils/cost_model.py](utils/cost_model.py) |
-| 팀 인터페이스 | [config/hardware.yaml](config/hardware.yaml), [rtl_data/schema.md](rtl_data/schema.md), [utils/crosscheck.py](utils/crosscheck.py) |
+| 비트평면 저장 | [src/quantize.py](../src/quantize.py) |
+| 비트평면 BRAM | [src/memory.py](../src/memory.py) |
+| 부분 내적 | [src/masked_sum.py](../src/masked_sum.py) |
+| 누산 | [src/accumulator.py](../src/accumulator.py) |
+| Q+ / Q- 레지스터 | [src/bounds.py](../src/bounds.py) |
+| 종단 판정 | [src/terminator.py](../src/terminator.py) |
+| θ 관리 | [src/threshold.py](../src/threshold.py) |
+| 읽기 차단 · 압축 | [src/schedule.py](../src/schedule.py) |
+| 4종 비교 | [src/designs.py](../src/designs.py) |
+| 디코드 루프 | [src/decode_loop.py](../src/decode_loop.py) |
+| 측정 | [utils/metrics.py](../utils/metrics.py), [utils/cost_model.py](../utils/cost_model.py) |
+| 팀 인터페이스 | [config/hardware.yaml](../config/hardware.yaml), [rtl_data/schema.md](../rtl_data/schema.md), [utils/crosscheck.py](../utils/crosscheck.py) |
 
 ---
 
 ## 관련 문서
 
-* [README.md](README.md) — 실행 방법과 실험 목록
-* [STRUCTURE.md](STRUCTURE.md) — 파일 구조와 설계 원칙
-* [slides/deck/](slides/deck/) — 발표용 16:9 슬라이드 6장
-* [rtl_data/schema.md](rtl_data/schema.md) — RTL 팀과의 데이터 계약
+* [README.md](../README.md) — 실행 방법과 실험 목록
+* [structure.md](structure.md) — 파일 구조와 설계 원칙
+* [slides/deck/](../slides/deck/) — 발표용 16:9 슬라이드 6장
+* [rtl_data/schema.md](../rtl_data/schema.md) — RTL 팀과의 데이터 계약

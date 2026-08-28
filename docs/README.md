@@ -1,22 +1,23 @@
-# docs/ — 배경지식
+# docs/ — 이 프로젝트의 문서 전부
 
-**이 프로젝트를 이해하는 데 필요한 선행 지식**을 모아 둔 곳이다.
-설계 자체가 아니라 **설계를 읽기 위한 준비물**이다.
+**루트에는 [README.md](../README.md) 하나만 둔다.** 재현 방법과 실험 목록은 거기 있고,
+**배경·설계·구조·선행조사는 전부 여기**다.
 
-세 곳이 헷갈리기 쉬우니 먼저 구분한다.
+## 목차
 
-| | 답하는 질문 |
-|---|---|
-| **docs/** (여기) | 이걸 이해하려면 **무엇을 미리 알아야 하는가** |
-| [architecture.md](../architecture.md) | 우리가 **무엇을 만드는가** |
-| [STRUCTURE.md](../STRUCTURE.md) | 코드가 **어디에 있는가** |
+| 문서 | 답하는 질문 | 언제 |
+|---|---|---|
+| **[background/](#background--llm-어텐션-기초)** | 이걸 이해하려면 **무엇을 미리 알아야 하는가** | 배경이 없다면 가장 먼저 |
+| [architecture.md](architecture.md) | 우리가 **무엇을 만드는가** | 설계를 이해할 때 |
+| [structure.md](structure.md) | 코드가 **어디에 있는가** | 코드를 만지기 직전 |
+| [related_work.md](related_work.md) | 남들은 **이미 무엇을 했는가** | 왜 이걸 하는지 · 발표 준비 |
 
-읽는 순서는 저 표의 위에서 아래다. 배경 없이 architecture.md 부터 열면
+읽는 순서는 표의 위에서 아래다. 배경 없이 `architecture.md` 부터 열면
 §2 양자화 규약에서 막힌다.
 
 ---
 
-## 영역 목록
+## 영역 폴더
 
 ### `background/` — LLM 어텐션 기초
 
@@ -56,18 +57,46 @@ architecture.md §1~3                          ← 설계
 
 ---
 
-## 앞으로 영역이 늘어나면
+## 단일 문서
 
-지금은 `background/` 하나지만 RTL·합성 단계로 넘어가면 늘어날 수 있다.
-예를 들어 Verilog·Vivado 입문이나 FPGA 자원 읽는 법 같은 것은 성격이 달라
-`background/` 에 섞지 말고 별도 폴더로 두는 편이 낫다.
+폴더를 만들 만큼 갈래가 없는 것은 `docs/` 바로 밑에 파일로 둔다.
 
-**규칙 세 가지만 지키면 된다.**
+| 문서 | 무엇을 | 어디부터 보면 되나 |
+|---|---|---|
+| [architecture.md](architecture.md) | 조감도 해설 — 대상 · 양자화 규약 · 제안 설계 · 검증 · 결과 | **§2 양자화 규약.** 상한식이 서는 자리라 나머지 전부의 전제다 |
+| [structure.md](structure.md) | 파일이 왜 이렇게 배치되어 있는가 + 저장소 트리 | §0 설계 원칙 네 가지. 코드를 만지기 직전에 |
+| [related_work.md](related_work.md) | 같은 기법을 먼저 한 논문 조사 (2026-08) | §0. **PADE 가 이미 존재한다**는 사실부터 본다 |
 
-1. **한 영역 = 한 폴더.** `docs/<영역>/`
-2. **그림은 여기 두지 않는다.** `slides/docs_<영역>/` 에 두고 문서에서 상대경로로 참조한다
-   (예: `background/` → `slides/docs_background/`). 규약은 [slides/README.md](../slides/README.md).
-3. **이 파일의 "영역 목록"에 한 절을 추가한다.** 문서 표 + 추천 경로 + 활용 팁.
-   폴더 안 문서가 5개를 넘어가면 그때 그 폴더에 자체 README 를 두고 여기서는 링크만 남긴다.
+셋 다 그림은 `slides/` 에 있고 문서에서 상대경로로 부른다
+(`architecture.md` → `../slides/architecture/`).
 
-[STRUCTURE.md](../STRUCTURE.md) 의 트리에도 반영할 것.
+---
+
+## 문서를 추가할 때
+
+**먼저 폴더인지 파일인지 정한다.**
+
+| 갈래가 | 어디에 | 지금 예 |
+|---|---|---|
+| 여러 문서로 나뉜다 | `docs/<영역>/` 폴더 | `background/` — 3개 |
+| 하나로 끝난다 | `docs/<이름>.md` 파일 | `architecture.md` · `structure.md` · `related_work.md` |
+
+애매하면 **파일로 두고 나중에 옮긴다.** 저 셋도 원래 루트에 있다가 여기로 내려온 것이다.
+RTL·합성 단계로 넘어가면 Verilog·Vivado 입문이나 FPGA 자원 읽는 법 같은 것이 붙을 텐데,
+성격이 다르니 `background/` 에 섞지 말고 새 폴더로 두는 편이 낫다.
+
+**규칙 네 가지.**
+
+1. **파일 이름은 소문자.** `docs/` 안은 전부 소문자다. 대문자는 루트의
+   `README.md`·`LICENSE` 관례이지 여기 관례가 아니다.
+2. **그림은 여기 두지 않는다.** `slides/` 에 두고 부른다 — 영역 폴더는
+   `slides/docs_<영역>/`, 단일 문서는 `slides/<문서이름>/`
+   (`background/` → `slides/docs_background/`, `architecture.md` → `slides/architecture/`).
+   규약은 [slides/README.md](../slides/README.md).
+3. **위 "목차" 표에 한 줄 넣는다.** 영역 폴더면 절도 하나 추가한다 —
+   문서 표 + 추천 경로 + 활용 팁. 폴더 안 문서가 5개를 넘어가면 그때 그 폴더에
+   자체 README 를 두고 여기서는 링크만 남긴다.
+4. **링크는 그 문서 파일 위치 기준 상대경로.** 저장소 최상위 기준이 아니다.
+   `docs/` 밑이면 `../src/…`, `docs/background/` 밑이면 `../../src/…` 가 된다.
+
+[structure.md](structure.md) 의 트리에도 반영할 것.

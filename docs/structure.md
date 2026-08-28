@@ -61,14 +61,14 @@ experiments/*.py  ──►  outputs/raw/*.csv  ──►  utils/visualization.p
 ```
 llm_et_attention/
 ├── run_paper_experiments.py     오케스트레이터 (--only / --skip / --figures-only / --crosscheck)
-├── STRUCTURE.md                 이 문서
-├── README.md                    재현 가이드
-├── architecture.md              전체 조감도 해설 (설계 자체)
-├── related_work.md              선행연구 조사 (2026-08)
+├── README.md                    재현 가이드 — ★ 루트에 두는 .md 는 이것 하나뿐이다
 │
-├── docs/
-│   ├── README.md               ★ 영역별 읽는 법 (배경지식 진입점)
-│   └── background/             LLM 어텐션 기초
+├── docs/                        ★ 문서는 전부 여기
+│   ├── README.md                ★ 문서 진입점 (목차 + 무엇을 언제 읽나)
+│   ├── architecture.md          전체 조감도 해설 (설계 자체)
+│   ├── structure.md             이 문서
+│   ├── related_work.md          선행연구 조사 (2026-08)
+│   └── background/              LLM 어텐션 기초
 │       ├── transformer.md            Transformer · Self-Attention · Prefill/Decode
 │       ├── attention_walkthrough.md  ★ 손으로 따라가는 수치 예제 + 종단 판정
 │       └── llama_3_2_1b.md           대상 모델 스펙·성능, KV 캐시 크기 계산
@@ -76,7 +76,7 @@ llm_et_attention/
 ├── slides/                      ★ 그림은 "쓰는 문서" 기준으로 나눈다
 │   ├── README/                  README.md 용
 │   │   └── 00_overview.svg
-│   ├── architecture/            architecture.md 용
+│   ├── architecture/            docs/architecture.md 용 (폴더 이름은 그대로 둔다)
 │   │   ├── 00_overview.svg
 │   │   ├── 05_finding.svg
 │   │   └── bitplane_layout.svg  §1-4 비트평면 저장 방식
@@ -115,7 +115,14 @@ llm_et_attention/
 │   ├── hw_parser.py             Vivado rpt / sim csv 파싱
 │   ├── crosscheck.py            ★ SW 예측 vs RTL 실측 대조
 │   ├── io.py                    raw 저장/로드 + 재현성 스탬핑 + LaTeX 표
-│   └── visualization.py         논문용 그래프 (검증된 팔레트)
+│   ├── visualization.py         논문용 그래프 (검증된 팔레트)
+│   └── visualization_example/   웹 교보재 — 코어는 이쪽을 임포트하지 않는다
+│       ├── matmul.py            /            행렬 곱 + numpy 교차 검증
+│       ├── schedule_demo.py     /schedule    src.schedule.apply() 를 그대로 구동
+│       ├── anatomy.py           /schedule_py inspect 로 코드에서 읽는 해부도
+│       ├── glossary.py          /glossary    용어 — 한 격자 위에 겹쳐 본다
+│       ├── server.py            http.server 기반 (추가 의존성 없음)
+│       └── static/              화면 — 산술은 하지 않고 그리기만 한다
 │
 ├── experiments/                 실험 6종 (각각 단독 실행 가능)
 │   ├── exp1_termination_profile.py   ★ 가장 먼저 — 종단이 일어나는가
@@ -129,8 +136,11 @@ llm_et_attention/
 │   ├── schema.md                ★ RTL 팀과의 데이터 계약
 │   └── mock/                    RTL 없이도 파이프라인이 돌게 하는 더미
 │
-├── tests/                       55개 (pytest 없이도 실행 가능)
-│   └── run_tests.py             내장 러너
+├── tests/                       209개 (pytest 없이도 실행 가능)
+│   ├── run_tests.py             내장 러너
+│   ├── test_schedule.py         정책 + ★ 설정 배선 (값 비교로는 못 잡는다)
+│   ├── test_memory_cycles.py    ★ BRAM 포트 -> 메모리 사이클 -> 병목 판정
+│   └── test_score_budget.py     ★ 정책을 바꿔도 점수가 문턱 안인가
 │
 ├── cache/tensors/               캡처한 q/K (gitignore)
 └── outputs/{raw,figures,tables,logs}   전부 재생성 가능 (gitignore)

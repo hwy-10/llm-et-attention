@@ -15,7 +15,7 @@
 | 폴더 | 쓰는 곳 | 내용 |
 |---|---|---|
 | `README/` | [README.md](../README.md) | `00_overview.svg` |
-| `architecture/` | [architecture.md](../architecture.md) | `00_overview.svg`, `05_finding.svg`, `bitplane_layout.svg` |
+| `architecture/` | [docs/architecture.md](../docs/architecture.md) | `00_overview.svg`, `05_finding.svg`, `bitplane_layout.svg` |
 | `docs_background/` | `docs/background/*.md` | `attention_pipeline.svg`, `causal_decode.svg`, `bound_narrowing.svg` |
 | `deck/` | 발표 | 16:9 슬라이드 6장 |
 
@@ -55,12 +55,15 @@ md5sum slides/*/00_overview.svg
 
 1. **쓸 문서의 폴더에 넣는다.** 문서가 여러 개면 각각에 사본을 둔다.
 2. 여러 문서가 쓰는데 해당 폴더가 없으면 문서 이름으로 새로 만든다.
-3. [STRUCTURE.md](../STRUCTURE.md) 의 트리에 반영한다.
-4. 문서에서 참조할 때는 **저장소 최상위 기준 상대 경로**를 쓴다.
+3. [structure.md](../docs/structure.md) 의 트리에 반영한다.
+4. 문서에서 참조할 때는 **그 문서 파일 위치 기준 상대 경로**를 쓴다.
+   저장소 최상위 기준이 아니다 — 문서가 몇 층 밑에 있느냐에 따라 앞이 달라진다.
 
-```markdown
-![전체 조감도](slides/README/00_overview.svg)
-```
+| 그림을 쓰는 문서 | 이렇게 적는다 |
+|---|---|
+| `README.md` (루트) | `![전체 조감도](slides/README/00_overview.svg)` |
+| `docs/architecture.md` | `![조감도](../slides/architecture/00_overview.svg)` |
+| `docs/background/*.md` | `![4단계](../../slides/docs_background/attention_pipeline.svg)` |
 
 ### SVG 를 직접 쓸 때 주의할 것
 

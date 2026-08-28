@@ -5,7 +5,7 @@
 
 **여기 나오는 모든 숫자는 실제로 계산해 검증한 값이다.** §5 에 재현 코드가 있다.
 
-> 읽는 순서: [transformer.md](transformer.md) → **이 문서** → [architecture.md §3](../../architecture.md)
+> 읽는 순서: [transformer.md](transformer.md) → **이 문서** → [architecture.md §3](../architecture.md)
 
 ---
 
@@ -50,7 +50,7 @@
 ### 3-1. 준비
 
 쿼리는 **대칭 signed**, K 는 **비대칭 unsigned** 로 양자화되어 있다
-([architecture.md §2](../../architecture.md)).
+([architecture.md §2](../architecture.md)).
 
 ```
 q = [ 5, -3,  7,  2]          ← 이 스텝 내내 고정. 모든 토큰에 공통
@@ -177,7 +177,7 @@ U_2 = S_2 + 882 = [2738,  882, 3314,  882]
 t1 의 참값이 400 이고 t3 이 368 이라는 것은 **끝내 계산하지 않는다.** 알 필요가 없기 때문이다.
 
 > ⚠ 위 절감은 **이론값**이다. 실제 BRAM 은 워드 단위로 읽으므로 흩어진 종단은
-> 그대로 절감이 되지 않는다. [architecture.md §3-6](../../architecture.md) 과
+> 그대로 절감이 되지 않는다. [architecture.md §3-6](../architecture.md) 과
 > `decision_latency_planes` 참조.
 
 ---
@@ -218,9 +218,9 @@ for m in range(1, 9):
 
 | 질문 | 어디에 |
 |---|---|
-| θ 를 **언제** 확정할 것인가 (여기서는 매 평면 갱신) | [architecture.md §3-5](../../architecture.md) |
-| 종단이 흩어지면 메모리 절감이 실현되는가 | [architecture.md §3-6](../../architecture.md) |
-| 일부러 손실을 감수하면 얼마나 더 아끼는가 (margin) | [architecture.md §3-7](../../architecture.md) |
+| θ 를 **언제** 확정할 것인가 (여기서는 매 평면 갱신) | [architecture.md §3-5](../architecture.md) |
+| 종단이 흩어지면 메모리 절감이 실현되는가 | [architecture.md §3-6](../architecture.md) |
+| 일부러 손실을 감수하면 얼마나 더 아끼는가 (margin) | [architecture.md §3-7](../architecture.md) |
 
 ---
 

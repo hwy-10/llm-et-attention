@@ -31,17 +31,18 @@
 ## 어디부터 읽을 것인가
 
 목적에 따라 진입점이 다르다. 순서대로 읽으면 앞 문서가 뒤 문서의 전제가 된다.
+**문서는 전부 [docs/](docs/) 안에 있다** — 루트에 두는 `.md` 는 이 README 하나뿐이다.
 
-| 목적 | 읽을 것 |
-|---|---|
-| **처음이라 배경이 없다면** | **[docs/](docs/)** — 배경지식 진입점. 영역별로 무엇을 어떤 순서로 볼지 |
-| **손으로 따라가 보려면** | [docs/background/attention_walkthrough.md](docs/background/attention_walkthrough.md) — 4토큰 수치 예제로 종단까지 |
-| **대상 모델이 궁금하다면** | [docs/background/llama_3_2_1b.md](docs/background/llama_3_2_1b.md) — 스펙·성능·KV 캐시 크기 |
-| **설계를 이해하려면** | [architecture.md](architecture.md) §2~3 — **★ §2 양자화 규약이 나머지 전부의 전제다** |
-| **왜 이걸 하는지** | [related_work.md](related_work.md) §0 — PADE 가 이미 존재한다는 사실부터 |
-| **RTL 을 짜려면** | [config/hardware.yaml](config/hardware.yaml) + [rtl_data/schema.md](rtl_data/schema.md) |
-| **코드를 만지려면** | [STRUCTURE.md](STRUCTURE.md) → `python tests/run_tests.py` 부터 |
-| **발표 자료가 필요하면** | [slides/](slides/) — 16:9 슬라이드 6장 + 문서용 그림 |
+| 목적 | 읽을 것 | 어디 |
+|---|---|---|
+| **처음이라 배경이 없다면** | **[docs/README.md](docs/README.md)** — 목차. 무엇을 어떤 순서로 볼지 | `docs/` |
+| **손으로 따라가 보려면** | [attention_walkthrough.md](docs/background/attention_walkthrough.md) — 4토큰 수치 예제로 종단까지 | `docs/background/` |
+| **대상 모델이 궁금하다면** | [llama_3_2_1b.md](docs/background/llama_3_2_1b.md) — 스펙·성능·KV 캐시 크기 | `docs/background/` |
+| **설계를 이해하려면** | [architecture.md](docs/architecture.md) §2~3 — **★ §2 양자화 규약이 나머지 전부의 전제다** | `docs/` |
+| **왜 이걸 하는지** | [related_work.md](docs/related_work.md) §0 — PADE 가 이미 존재한다는 사실부터 | `docs/` |
+| **코드를 만지려면** | [structure.md](docs/structure.md) → `python tests/run_tests.py` 부터 | `docs/` |
+| **RTL 을 짜려면** | [config/hardware.yaml](config/hardware.yaml) + [rtl_data/schema.md](rtl_data/schema.md) | 루트 |
+| **발표 자료가 필요하면** | [slides/](slides/) — 16:9 슬라이드 6장 + 문서용 그림 | 루트 |
 
 > ⚠ **아래 §"합성 데이터 기준 예시 결과"의 수치는 전부 합성 Q/K 기준이다.**
 > 경향을 보는 용도이고, 논문·발표에 쓸 값은 실제 텐서 캡처로 다시 뽑아야 한다.
@@ -129,14 +130,19 @@ exp1 은 정확 모드의 무손실성도 함께 자동 점검한다.
 
 이론 절감 27.9% 가 워드폭과 스케줄 정책에 따라 이렇게 갈린다.
 
-| 워드폭 | `batch` | `compaction` |
-|---|---|---|
-| 1 | 27.9% (100%) | 27.9% (100%) |
-| 8 | 12.3% (44%) | 27.6% (99%) |
-| 32 | **3.8% (14%)** | **26.6% (95%)** |
-| 64 | 1.5% (5%) | 24.4% (87%) |
+| 워드폭 | `batch` | `compaction` | `two_phase` |
+|---|---|---|---|
+| 1 | 3.4% (12%) | 27.9% (100%) | 27.9% (100%) |
+| 8 | 3.4% (12%) | 27.6% (99%) | 12.3% (44%) |
+| 32 | **3.8% (14%)** | **26.6% (95%)** | 3.8% (14%) |
+| 64 | 1.5% (5%) | 24.4% (87%) | 1.5% (5%) |
 
 → **work-compaction 없이는 메모리 읽기 절감이 실현되지 않는다.**
+
+함정이 둘이다. **워드폭**이 넓으면 죽은 토큰이 산 토큰과 같은 워드에 묶이고,
+**묶음 폭**이 넓으면 정책이 죽은 토큰을 통째로 끌고 간다. `batch` 는 워드폭이
+1이어도 12% 밖에 실현하지 못한다 — 묶음 폭 32가 워드폭을 대신해 버리기 때문이다.
+`two_phase` 는 압축이 한 번뿐이라 그 뒤로 생기는 구멍을 회수하지 못한다.
 
 ### 정직하게 짚어야 할 것
 
@@ -242,7 +248,7 @@ pytest -q                            # pytest 가 있으면 이쪽도 가능
 
 ## 블록별 검증 분담
 
-[architecture.md §3](architecture.md) 의 블록도(조감도 2열)와 코드의 대응이다.
+[architecture.md §3](docs/architecture.md) 의 블록도(조감도 2열)와 코드의 대응이다.
 **블록 경계가 모듈 경계와 거의 일치하므로, 블록대로 나누면 검증 범위가 겹치지 않는다.**
 
 | 블록도 | 코드 | 핵심 함수 |
@@ -340,12 +346,12 @@ terminator.run_step()  ──→  read_live  (n_planes × n_tokens, bool)  ─�
 * **순서** — 그룹 1의 상한식이 틀리면 그룹 2의 절감 검증은 무의미하다.
   그룹 1이 `bounds.py` 만 먼저 끝내고 공유한 뒤 나머지를 진행할 것.
 * **산출물** — "읽었다"가 아니라 **반례를 찾으려 시도한 기록**. 못 찾았으면 그렇게 적는다.
-* **문서 대조** — 코드와 [architecture.md](architecture.md) 가 어긋나는 곳을 찾으면 그것도 결과다.
+* **문서 대조** — 코드와 [architecture.md](docs/architecture.md) 가 어긋나는 곳을 찾으면 그것도 결과다.
   최근 §2 의 unsigned 전제가 정정되었으므로 그 주변을 특히 볼 것.
 
 ## 참고
 
-> 전체 조사는 **[related_work.md](related_work.md)** 에 있다.
+> 전체 조사는 **[related_work.md](docs/related_work.md)** 에 있다.
 > 22개 primary source, 3표 적대적 검증(14건 확정 / 11건 기각) 기준이다.
 > **논문을 쓰기 전에 반드시 읽을 것** — 아래 세 가지가 거기서 나왔다.
 
@@ -366,4 +372,4 @@ terminator.run_step()  ──→  read_live  (n_planes × n_tokens, bool)  ─�
    남는 차별점은 FPGA/DSP-free · BRAM 워드폭 · INT8 unsigned 데이터패스다.
 2. **[4]의 "6.9%"는 area 가 아니라 power** 이고, 블록 두 그룹을 합치면 약 10~12% 다.
 3. **"signed 면 상한식이 깨진다"는 전제는 반증되었다.** unsigned 는 수학적 필연이 아니라
-   회로 단순화다. `config/quant.yaml` 과 [architecture.md §2](architecture.md) 의 정정 참조.
+   회로 단순화다. `config/quant.yaml` 과 [architecture.md §2](docs/architecture.md) 의 정정 참조.

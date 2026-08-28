@@ -1,6 +1,6 @@
 # 대상 모델 — Llama 3.2 1B
 
-[architecture.md §1-3](../../architecture.md) 이 "계층 16, KV 헤드 8, 헤드 차원 64" 라고만
+[architecture.md §1-3](../architecture.md) 이 "계층 16, KV 헤드 8, 헤드 차원 64" 라고만
 적고 넘어가는 부분의 배경이다. **그 숫자들이 어디서 왔고, 이 프로젝트에 무엇을 강제하는지**를 정리한다.
 
 > 어텐션 자체가 어떻게 돌아가는지는 [transformer.md](transformer.md) 를 먼저 보면 된다.
@@ -136,7 +136,7 @@ KV 캐시 = 2 (K와 V) × 계층 16 × KV헤드 8 × head_dim 64 × T × 바이�
 
 ## 5. 양자화가 성능에 미치는 영향
 
-이 프로젝트는 K 를 **INT8 비대칭 unsigned** 로 양자화한다([architecture.md §2](../../architecture.md)).
+이 프로젝트는 K 를 **INT8 비대칭 unsigned** 로 양자화한다([architecture.md §2](../architecture.md)).
 
 일반적으로 KV 캐시 INT8 양자화는 품질 손실이 거의 없다고 보고된다.
 문제는 그 아래다 — INT4 이하로 내려가면 채널별(per-channel) 처리나 outlier 분리 같은
@@ -168,7 +168,7 @@ KV 캐시 = 2 (K와 V) × 계층 16 × KV헤드 8 × head_dim 64 × T × 바이�
 
 > 단, "상위 k 를 정확히 골랐다"와 "모델 성능이 유지된다"는 다른 명제다.
 > vAttention (ICLR 2026) 은 **정확한 top-k 로도 full attention 을 항상 근사하지 못한다**는
-> 것을 보인다. 자세한 것은 [related_work.md §5-1](../../related_work.md) 참조.
+> 것을 보인다. 자세한 것은 [related_work.md §5-1](../related_work.md) 참조.
 
 ---
 
