@@ -51,7 +51,9 @@ class ThetaPolicy:
     top_k: int = 8
     once_at_m: int = 3
     margin: float = 0.0
-    margin_mode: str = "relative_gap"
+    # ★ 2026-08-28 확정: relative_width. run_design / run_decode 도 같은 값을 쓴다.
+    #   (예전에는 이 기본값만 relative_gap 이라 문서와 코드가 어긋나 있었다)
+    margin_mode: str = "relative_width"
 
     def __post_init__(self) -> None:
         if self.name not in POLICIES:
@@ -67,15 +69,21 @@ class ThetaPolicy:
     def margin_abs(self, width: float, q_pos: float, gap: float = 0.0) -> float:
         """이번 평면에서 θ 에 더할 여유값 (절대 점수 단위).
 
-        relative_gap  : ★ 기본값 ★  gap = (활성 토큰 하한의 최댓값 − θ) 에 비례.
+        relative_gap  : gap = (활성 토큰 하한의 최댓값 − θ) 에 비례.
+                        ⚠ margin=1.0 이면 θ 가 1등 하한까지만 올라가므로 **구조적으로
+                          포화**한다. 절감이 더 늘지 않아 곡선이 그려지지 않는다.
                         즉 "1등과 k등 사이의 간격"을 단위로 삼는다.
                         margin=0   -> 정확 모드 (θ 그대로)
                         margin=1.0 -> θ 를 1등 수준까지 올림 (매우 공격적)
                         점수 분포의 실제 산포에 맞춰 정규화되므로 노브가 잘 듣는다.
 
-        relative_width: 불확실성 폭(R_m − L_m offset)에 비례.
-                        ⚠ 이 폭은 초반 평면에서 점수 산포보다 한 자릿수 크다.
-                          그래서 margin 을 키워도 잘 듣지 않는다. 참고용으로만 둔다.
+        relative_width: ★ 실험에서 실제로 쓰는 모드 ★ 불확실성 폭에 비례.
+                        이 폭은 초반 평면에서 점수 산포보다 한 자릿수 크므로 공격성이
+                        빠르게 올라간다. 그래서 margin 0.8 까지 무손실을 유지하다가
+                        1.0 에서 무너지는 뚜렷한 knee 가 나온다 — 절감-정확도 곡선을
+                        얻는 데 필요한 성질이다.
+                        (구 주석은 "잘 안 듣는다"고 했으나 실측과 반대다.
+                         run_design / run_decode 의 기본값도 이쪽이다.)
         relative_qpos : R_0 = 255·Q+ 에 비례 (평면과 무관한 고정 여유값).
         absolute      : 점수 단위 그대로.
         """
@@ -135,11 +143,32 @@ class ThetaTracker:
 
 
 def topk_indices(scores: np.ndarray, k: int) -> np.ndarray:
-    """상위 k 인덱스 (점수 내림차순).
+    """상위 k 인덱스 (점수 내림차순). **유한한 값만 고른다.**
 
-    -inf 로 마스킹된 자리는 뽑지 않는다. 종단된 토큰은 전부 -inf 로 동률이라
-    임의로 순서가 정해지는데, 그것이 top-k 에 섞이면 보존율이 부풀려진다.
-    살아남은 것이 k 개보다 적으면 그만큼만 돌려준다.
+    ★ 2026-08 양 팀이 독립적으로 같은 결론에 도달한 자리 ★
+
+    종단된 토큰은 `masked_scores()` 가 `-inf` 로 채운다. 예전에는 그것들도 후보에
+    들어가서, 생존 토큰이 k 개보다 적으면 `argpartition` 이 `-inf` 중 아무거나 골라
+    자리를 메웠다. 전부 `-inf` 로 동률이라 순서가 임의로 정해지고, 그것이 top-k 에
+    섞이면 **보존율이 부풀려진다.** 살아남은 것이 k 개보다 적으면 그만큼만 돌려준다.
+
+    실측 (K_TOP=16, 정확 모드)
+
+        eval_k    필터 전   필터 후
+             8    1.0000   1.0000     eval_k <= K_TOP 이면 차이 없다
+            16    1.0000   1.0000
+            32    0.7239   0.6285     ★
+            64    0.7407   0.3691     ★ 두 배 부풀려져 있었다
+
+    지금 설정(`eval_top_k` 최대 16 = `K_TOP`)에서는 안 걸린다. 가드가 생존자를
+    `K_TOP` 개 이상으로 보장하기 때문이다. 그러나 `eval_k` 를 키우거나 `K_TOP` 을
+    낮추면 **조용히** 부풀려진다.
+
+    호출부 3곳 확인
+      terminator.py   가드 — 후보가 `live` 로 걸러져 있고 k <= 생존 수 -> 영향 없음
+      decode_loop.py  참 점수 쪽은 전부 유한 -> 영향 없음
+      decode_loop.py  종단 토큰이 -inf 인 쪽 -> ★ 여기가 고쳐진다
+      utils/metrics.py  topk_retention 이 이 함수를 쓴다
     """
     scores = np.asarray(scores)
     k = int(min(k, scores.shape[-1]))

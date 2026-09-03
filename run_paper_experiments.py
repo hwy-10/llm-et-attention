@@ -32,6 +32,9 @@ EXPERIMENTS = {
     "exp4": ("experiments.exp4_schedule_policy", "스케줄 정책 + BRAM 워드폭 (6.3-2)"),
     "exp5": ("experiments.exp5_seqlen_topk", "문맥 길이 / 상위 k 스캔"),
     "exp6": ("experiments.exp6_breakeven", "손익분기 (6.3-4)"),
+    "exp7": ("experiments.exp7_memory_bottleneck", "★ 병목 위치와 종단의 가치 (팀2)"),
+    "exp8": ("experiments.exp8_real_perplexity", "★ 실측 perplexity — 보간 아님 (팀2)"),
+    "exp9": ("experiments.exp9_margin_coverage", "★ margin 커버리지 — 전 헤드 x 여러 텍스트 (팀2)"),
 }
 
 
@@ -53,7 +56,7 @@ def run_experiments(names: list[str], cfg, quick: bool = False) -> dict[str, int
         t0 = time.perf_counter()
         try:
             mod = _import(mod_name)
-            if key in ("exp5", "exp6"):
+            if key in ("exp5", "exp6", "exp7", "exp8", "exp9"):
                 mod.run(cfg)                       # 자체적으로 seq_len 을 바꾼다
             else:
                 if shared_wb is None:
@@ -84,7 +87,7 @@ def make_figures(cfg) -> int:
     # 그림 8.1 — margin 트레이드오프
     try:
         recs = load_records("exp2_margin_sweep")
-        default_k = cfg.get("sweeps.exp2.top_k", [8])[0]
+        default_k = cfg.get("sweeps.exp2.top_k", [16])[0]   # ★ K_TOP 확정값
         sub = [r for r in recs if r.get("top_k") == default_k
                and r.get("design") in ("exact", "approx")]
         if sub:
@@ -245,9 +248,13 @@ def generate_mock(cfg) -> int:
 
     from src.config import PROJECT_ROOT
 
+    # ★ word_tokens 를 여기 하드코딩하면 config 를 바꿔도 mock 이 안 따라온다.
+    #   2026-08-28 WORD_TOKENS=1 확정 후 이 값이 32 로 남아 mock 만 옛 설정으로
+    #   생성되던 문제가 있었다. 설정에서 읽어 온다.
+    wt = int((cfg.get("hardware.memory", {}) or {}).get("word_tokens", 1))
     keys = [
         {"design": d, "seq_len": n, "top_k": 8,
-         "margin": 0.1 if d == "approx" else 0.0, "word_tokens": 32}
+         "margin": 0.1 if d == "approx" else 0.0, "word_tokens": wt}
         for n in (128, 256, 512)
         for d in ("baseline", "seq", "exact", "approx")
     ]

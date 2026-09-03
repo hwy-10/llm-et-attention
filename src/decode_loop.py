@@ -18,7 +18,7 @@ T 가 자라는 실제 디코딩을 그대로 돈다.
 from __future__ import annotations
 
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 
 import numpy as np
 
@@ -28,6 +28,7 @@ from .dataset import QKSnapshot
 from .designs import DESIGNS, DesignResult, run_design
 from .masked_sum import partial_dots
 from .memory import BramSpec, ReadAccount, _ceil_div
+from .output_stage import OutputCounters, OutputSpec, emit_step
 from .quantize import KeyQuant, quantize_key, to_bitplanes
 from .schedule import ScheduleSpec
 from .threshold import topk_indices
@@ -148,12 +149,23 @@ def run_decode(
     bram: BramSpec | None = None,
     eval_top_k: tuple[int, ...] = (1, 4, 8, 16),
     keep_trace: bool = True,
+    out: OutputSpec | None = None,
 ) -> DecodeResult:
     """디코드 루프를 끝까지 돌며 정확도와 하드웨어 회계를 누적한다."""
     if design not in DESIGNS:
         raise KeyError(f"unknown design {design!r}")
     sched = sched or ScheduleSpec()
     bram = bram or BramSpec()
+    # ★ 출력 경로 (ARCHITECTURE.md 7.1).
+    #   기본값은 **이 실행의 규모**에 맞춘다 — 골든모델은 재는 쪽이지 하드웨어가 아니다.
+    #   상한은 N_MAX = 최대 활성 토큰 수. 2 x top_k 로 두면 자른다
+    #   (실측 최대가 34 로 32 를 넘는다. output_stage 참조).
+    #   폭은 그 N_MAX 를 담을 만큼. config 의 idx_bits 와 맞는지는 따로 보고한다
+    #   (여기서 예외를 던지면 긴 문맥 실험이 통째로 죽는다 — exp7 에서 실제로 겪었다).
+    n_max_run = int(wb.step_tokens.max()) if wb.n_steps else 1
+    out = out or OutputSpec(out_buf=max(n_max_run, 2 * top_k),
+                            idx_bits=max(1, (n_max_run - 1).bit_length()))
+    out_cnt = OutputCounters()
 
     n_steps = wb.n_steps
     total_cycles = 0            # 연산 사이클 (기존 의미 — 절대 바꾸지 않는다)
@@ -170,10 +182,12 @@ def run_decode(
     cycles_trace = np.zeros(n_steps, dtype=np.int64)
     words_trace = np.zeros(n_steps, dtype=np.int64)
     term_trace = np.zeros(n_steps, dtype=np.float64)
+    latency_trace = np.zeros(n_steps, dtype=np.int64)
     # 평면별 생존 곡선 — 종단이 몇 번째 평면부터 실제로 시작되는지 보여준다.
     # (2단계 처리의 분할점 m0 를 정하는 근거이기도 하다. 가이드 6.3-(2))
     plane_live = np.zeros(wb.n_planes, dtype=np.float64)
     plane_total = np.zeros(wb.n_planes, dtype=np.float64)
+    term_plane_hist = np.zeros(wb.n_planes + 1, dtype=np.int64)
 
     from .schedule import baseline_cycles as _base_cyc
     from .schedule import dense_cycles as _dense_cyc
@@ -198,11 +212,20 @@ def run_decode(
             kk = min(top_k, n_active)
             oracle_theta_int = float(np.partition(ex, -kk)[-kk])
 
+        # ★ 판정 지연은 스텝마다 다르다 (활성 토큰이 자라므로) — memory.latency_planes 참조.
+        #   decision_latency_mode="fixed" 면 설정값 그대로, "auto" 면 이 스텝의 n_active 로 계산한다.
+        step_bram = bram
+        if bram.decision_latency_mode == "auto":
+            step_bram = replace(
+                bram, decision_latency_planes=bram.latency_at(n_active, sched.lanes)
+            )
+        latency_trace[s] = step_bram.decision_latency_planes
+
         res: DesignResult = run_design(
             design, p, bounds,
             top_k=top_k, margin=margin, margin_mode=margin_mode,
             theta_policy=theta_policy, once_at_m=once_at_m,
-            schedule_policy=schedule_policy, sched=sched, bram=bram,
+            schedule_policy=schedule_policy, sched=sched, bram=step_bram,
             prev_theta_int=prev_theta_int, oracle_theta_int=oracle_theta_int,
         )
 
@@ -227,6 +250,14 @@ def run_decode(
         if res.step_result is not None:
             plane_live += res.step_result.read_live.sum(axis=1)
             plane_total += n_active
+            # ★ OUTPUT 단계. 여기서만 생존 수 분포와 자르기 횟수가 나온다.
+            #   비트폭 검사는 골든모델 int64 가 조용히 삼키는 것을 막는다.
+            emit_step(res.step_result, out, counters=out_cnt)
+        # ★ 토큰별 종단 평면. exp1 이 이걸 히스토그램에 넣어야 한다.
+        #   요약의 mean_term_plane 은 '스텝 평균의 평균'이라 토큰 가중이 아니다.
+        term_plane_hist += np.bincount(
+            np.asarray(res.term_plane, dtype=np.int64), minlength=wb.n_planes + 1
+        )[: wb.n_planes + 1]
 
         # --- 정확도 ------------------------------------------------------
         # ★ 두 종류의 손실을 반드시 분리해서 본다 ★
@@ -238,9 +269,15 @@ def run_decode(
         test_real = wb.real_scores(s, res.scores)
         for k in eval_top_k:
             kk = int(min(k, n_active))
-            a = topk_indices(ref_real, kk)
-            b = topk_indices(test_real, kk)
-            retention[k].append(np.intersect1d(a, b).size / kk)
+            # ★ 동점을 값으로 처리한다 (2026-08-29) ★
+            #   예전에는 두 topk_indices 결과를 intersect1d 로 비교했다. 참 점수가
+            #   동점이면 양쪽이 **다른 토큰을 골라** 둘 다 살아 있는데도 손실로 셌다.
+            #   실제 Llama T=2048 에서 스텝 1404 가 그랬다 — 73,642 점 동점 2개.
+            #   정확 모드가 0.99997 로 나와 "무손실" 주장과 어긋났다.
+            #   참 점수가 k번째 값 이상이면 top-k 자격이 있으므로 보존으로 센다.
+            thr = float(np.partition(ref_real, -kk)[-kk])
+            picked = topk_indices(test_real, kk)
+            retention[k].append(float(np.count_nonzero(ref_real[picked] >= thr)) / kk)
 
         pr, pt = _softmax(ref_real), _softmax(test_real)
         kl_list.append(float(np.sum(pr * (np.log(pr + 1e-12) - np.log(pt + 1e-12)))))
@@ -301,6 +338,29 @@ def run_decode(
         "kl_excess_from_termination": kl_design - kl_oracle,
     }
     summary.update(total_reads.as_dict())
+    # ★ 출력 버퍼 회계 — OUT_BUF 근거와 CNT_TRUNC (ARCHITECTURE.md 7.1.4)
+    if out_cnt.hist:
+        sizes = np.repeat(np.array(sorted(out_cnt.hist)),
+                          [out_cnt.hist[k] for k in sorted(out_cnt.hist)])
+        summary["out_alive_mean"] = float(sizes.mean())
+        summary["out_alive_p99"] = int(np.percentile(sizes, 99))
+        summary["out_alive_max"] = int(out_cnt.max_alive)
+        summary["out_buf"] = int(out.out_buf)
+        summary["cnt_trunc"] = int(out_cnt.cnt_trunc)
+        summary["out_tokens_dropped"] = int(out_cnt.tokens_dropped)
+        # ★ 이 실행이 요구하는 score_idx 폭. config 의 idx_bits 가 이보다 좁으면
+        #   그 하드웨어로는 이 문맥을 못 돌린다. N_MAX 를 늘릴 때 함께 봐야 한다.
+        summary["out_idx_bits_needed"] = int(max(1, (n_max_run - 1).bit_length()))
+    # ★ 토큰 단위 종단 분포 (스텝 평균이 아니다). exp1 이 이걸 쓴다.
+    n_tok = int(term_plane_hist.sum())
+    for m in range(wb.n_planes + 1):
+        summary[f"term_hist_{m}"] = int(term_plane_hist[m])
+    if n_tok:
+        idx = np.arange(wb.n_planes + 1)
+        summary["mean_term_plane_tokenwise"] = float((idx * term_plane_hist).sum() / n_tok)
+        summary["never_terminated_frac"] = float(term_plane_hist[wb.n_planes] / n_tok)
+        summary["terminated_by_plane2_frac"] = float(term_plane_hist[:3].sum() / n_tok)
+        summary["terminated_by_plane4_frac"] = float(term_plane_hist[:5].sum() / n_tok)
     for k in eval_top_k:
         # k=1 은 utils/metrics.py 와 같은 이름으로 낸다. 같은 값이 두 이름으로
         # 나가면 예산 검사(top1_acc)와 실험 CSV(top1_retention)가 다른 열을 본다.
@@ -325,6 +385,8 @@ def run_decode(
         "lanes": sched.lanes,
         "word_tokens": bram.word_tokens,
         "decision_latency_planes": bram.decision_latency_planes,
+        "decision_latency_mode": bram.decision_latency_mode,
+        "decision_latency_mean": float(latency_trace.mean()) if n_steps else 0.0,
         "seq_len": int(wb.step_tokens[-1]) if wb.n_steps else 0,
         "warmup": wb.warmup,
     }
@@ -335,6 +397,7 @@ def run_decode(
             "cycles": cycles_trace,
             "words_bram": words_trace,
             "mean_term_plane": term_trace,
+            "decision_latency": latency_trace,
         }
     return DecodeResult(config=cfg, summary=summary, per_step=per_step)
 

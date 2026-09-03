@@ -359,6 +359,8 @@ _SENTINEL = {
     "word_bits": 17,
     "n_ports": 19,
     "decision_latency_planes": 8,
+    "decision_latency_mode": "auto",
+    "pipeline_cycles": 23,
 }
 
 _ALL_WIRING = [("spec", ScheduleSpec, SPEC_WIRING), ("bram", BramSpec, BRAM_WIRING)]

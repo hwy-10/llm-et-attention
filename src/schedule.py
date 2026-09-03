@@ -221,6 +221,9 @@ BRAM_WIRING = (
     ("word_bits",               "hardware.memory.word_bits",               int),
     ("n_ports",                 "hardware.memory.n_bram_ports",            int),
     ("decision_latency_planes", "hardware.memory.decision_latency_planes", int),
+    # 판정 지연을 T 의 함수로 볼 것인가 (docs/architecture.md §6.2.1)
+    ("decision_latency_mode",   "hardware.memory.decision_latency_mode",   str),
+    ("pipeline_cycles",         "hardware.memory.pipeline_cycles",         int),
 )
 
 

@@ -763,12 +763,22 @@ def test_real_values_come_from_the_config_not_hardcoded():
 def test_demo_grid_preserves_the_lane_word_relation():
     """★ 축소판이 요점을 왜곡하지 않아야 한다.
 
-    실제 설정에서 lanes == word_tokens 이고, 그 '우연히 같음'이 이 페이지가
-    보여 주려는 헷갈림의 원인이다. 축소판에서 둘을 다르게 잡으면 요점이 사라진다.
+    이 페이지가 보여 주려는 헷갈림은 **레인과 워드가 같은 단위처럼 보인다**는 것이다.
+    실제 설정에서 `lanes == word_tokens x n_ports` 라 한 워드 묶음이 정확히 한 연산
+    사이클을 채운다. 축소판이 그 관계를 안 지키면 요점이 사라진다.
+
+    ★ 2026-08-29 정정 — 예전에는 `lanes == word_tokens` 로 봤는데, 그건 `n_ports=2`
+      에서 우연히 맞은 한 경우였다. `WORD_TOKENS=1, n_ports=32` 도 같은 관계다.
     """
     g = glossary.build()
     real, demo = g["real"], g["demo"]
-    assert (demo["lanes"] == demo["word_tokens"]) == (real["lanes"] == real["word_tokens"])
+    real_tight = real["lanes"] == real["word_tokens"] * real["n_ports"]
+    demo_tight = demo["lanes"] == demo["word_tokens"] * demo.get("n_ports", 1)
+    assert demo_tight == real_tight, (
+        f"real: lanes={real['lanes']} word_tokens={real['word_tokens']} "
+        f"n_ports={real['n_ports']} / demo: lanes={demo['lanes']} "
+        f"word_tokens={demo['word_tokens']} n_ports={demo.get('n_ports')}"
+    )
     assert demo["lanes"] <= demo["n_tokens"]
     assert demo["word_tokens"] <= demo["n_tokens"]
 
@@ -825,15 +835,26 @@ def test_depgraph_marks_the_bridge():
     node = {n["id"]: n for n in g["nodes"]}
 
     # 브리지 = 우리 코드가 판정 결과를 받아 가는 지점. terminator 로 들어가는 간선뿐이다.
-    assert bridges == {("src/schedule.py", "src/terminator.py"),
-                       ("src/designs.py", "src/terminator.py")}, bridges
+    #
+    # ★ 목록을 통째로 못 박지 않는다 (2026-08-29) ★
+    #   experiments/ 에 terminator 를 쓰는 실험이 늘 때마다 이 단언이 깨졌다
+    #   (exp8, exp9 를 넣자 바로 걸렸다). 실험이 우리 모듈을 쓰는 것은 정상이고
+    #   팀 경계와는 무관하다. 진짜 불변식 두 가지만 고정한다.
+    assert all(t == "src/terminator.py" for _s, t in bridges), bridges
+    assert {s for s, _t in bridges if s.startswith("src/")} == {
+        "src/schedule.py", "src/designs.py"}, bridges
     assert node["src/terminator.py"]["scope"] == "bridge"
     assert node["src/memory.py"]["scope"] == "core"
 
     # ★ read_live 는 import 되는 이름이 아니라 StepResult 의 속성이다.
     # import 목록에서 찾던 조건이 한 번도 안 걸려 죽어 있었다 — 원문에서 찾는다.
     assert all(g["summary"]["bridge_name"] not in e["names"] for e in g["edges"])
-    assert set(g["summary"]["touch_bridge"]) == {"decode_loop", "memory", "schedule", "terminator"}
+    # ★ src/ 쪽만 못 박는다 (2026-08-29). read_live 를 읽어 회계에 쓰는 실험이
+    #   늘 때마다 이 단언이 깨졌다 (exp9 가 절감을 재느라 read_live 를 본다).
+    #   실험이 읽는 것은 정상이고, 고정해야 할 것은 **src/ 안의 생산자·소비자**다.
+    touch = set(g["summary"]["touch_bridge"])
+    src_mods = {n["label"] for n in g["nodes"] if n["id"].startswith("src/")}
+    assert touch & src_mods == {"decode_loop", "memory", "schedule", "terminator"}, touch
 
 
 def test_depgraph_layout_has_no_overlap():

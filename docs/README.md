@@ -1,3 +1,8 @@
+> ## 읽을 문서는 [`GUIDE.md`](../GUIDE.md) 하나입니다.
+>
+> 이 폴더의 문서들은 **찾아보는 용도**입니다 — RTL 사양(`ko/architecture_ko.md`),
+> 실행법(`ko/running_experiments_ko.md`), 선행연구(`related_work.md`).
+
 # docs/ — 이 프로젝트의 문서 전부
 
 **루트에는 [README.md](../README.md) 하나만 둔다.** 재현 방법과 실험 목록은 거기 있고,

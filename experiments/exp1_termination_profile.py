@@ -12,11 +12,8 @@
 
 from __future__ import annotations
 
-import numpy as np
-
 from src.decode_loop import run_decode
 from utils.io import save_records, save_trace
-from utils.metrics import termination_profile
 
 from . import bram_from_config, build_workbench, load_config, spec_from_config
 
@@ -46,10 +43,11 @@ def run(cfg=None, wb=None, verbose: bool = True) -> list[dict]:
                         theta_policy=pol, sched=sched, bram=bram, keep_trace=True,
                     )
                     rec = r.record()
-                    # 종단 시점 분포를 함께 붙인다
-                    rec.update(termination_profile(
-                        np.repeat(r.per_step["mean_term_plane"], 1), wb.n_planes
-                    ))
+                    # ★ 종단 분포는 run_decode 가 토큰 단위로 이미 누적해 둔다.
+                    #   예전에는 per_step["mean_term_plane"](스텝별 '평균', 실수)을
+                    #   termination_profile() 에 넣었는데, 그 함수는 토큰별 종단 평면
+                    #   (정수)을 기대하므로 히스토그램 단위가 스텝이 되어 버렸다.
+                    #   terminated_by_plane*_frac 이 구조적으로 0 이 나오던 원인이다.
                     records.append(rec)
                     key = f"{design}" + (f"_m{margin}" if design == "approx" else "")
                     if key not in traces:
@@ -58,7 +56,7 @@ def run(cfg=None, wb=None, verbose: bool = True) -> list[dict]:
                         s = r.summary
                         print(
                             f"  {design:<9s} k={top_k:<3d} m={margin:<4.2f} "
-                            f"term={s['mean_term_plane']:.2f}  "
+                            f"term={s.get('mean_term_plane_tokenwise', s['mean_term_plane']):.2f}  "
                             f"read_ideal={s['read_saving_ideal']:.3f} "
                             f"read_bram={s['read_saving_bram']:.3f}  "
                             f"top{top_k}={s.get(f'top{top_k}_retention', float('nan')):.4f}",

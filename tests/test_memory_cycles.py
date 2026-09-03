@@ -151,15 +151,27 @@ def test_compute_cycles_are_unchanged_by_the_new_model():
 # ---------------------------------------------------------------------------
 
 def test_current_config_happens_to_be_compute_bound():
-    """실제 설정(word_tokens=32=lanes, n_ports=2)에서는 메모리가 병목이 아니다.
+    """실제 설정에서 메모리가 병목이 아니다 — 그 조건을 못 박는다.
 
-    **우연이다.** 워드 하나가 정확히 한 연산 사이클 분의 토큰을 담기 때문이며,
-    아래 test_narrow_words_flip_the_bottleneck 이 그 우연의 경계를 보여 준다.
+    ★ 조건은 `word_tokens x n_ports >= lanes` 다 (2026-08-29 정정).
+
+    한 사이클에 `lanes` 개 토큰을 먹이려면 그만큼의 토큰이 메모리에서 나와야 하고,
+    한 번에 나오는 양이 `word_tokens x n_ports` 다. 이 곱이 `lanes` 에 못 미치면
+    연산을 아무리 줄여도 시간이 안 준다.
+
+    예전 판은 `word_tokens == lanes` (32 == 32) 를 전제로 삼았는데, 그건 이 조건이
+    `n_ports=2` 에서 우연히 맞아떨어진 한 경우였다. `WORD_TOKENS=1` 로 바꾸면서
+    `n_ports` 를 32 로 올려야 한다는 것이 드러났다 —
+    1 x 2 = 2 < 32 이면 메모리가 연산의 11배가 된다.
+
     이 테스트가 깨지면 논문의 사이클 수치를 다시 봐야 한다.
     """
     cfg = load_config()
     spec, bram = spec_from_config(cfg), bram_from_config(cfg)
-    assert bram.word_tokens == spec.lanes, "the premise this test rests on is broken"
+    assert bram.word_tokens * bram.n_ports >= spec.lanes, (
+        f"word_tokens({bram.word_tokens}) x n_ports({bram.n_ports}) "
+        f"< lanes({spec.lanes}): the premise this test rests on is broken"
+    )
 
     for policy in POLICIES:
         r = apply(SR, spec, bram, policy)
@@ -253,7 +265,8 @@ def test_summary_memory_cycles_is_a_sum_of_per_step_ceilings():
     없으므로 이쪽이 맞는 모델인데, 이름만 보고 총합으로 대조하면 어긋난다.
     """
     s = _summary("exact")
-    floor = -(-s["words_bram"] // 2)                # 포트 2개, 총합 기준 하한
+    n_ports = bram_from_config(load_config()).n_ports
+    floor = -(-s["words_bram"] // n_ports)          # 총합 기준 하한
 
     assert s["total_memory_cycles"] >= floor
     # 스텝 수만큼은 더 클 수 있다 — 스텝당 최대 1 사이클씩 올림
@@ -296,9 +309,18 @@ def test_the_memory_axis_moves_the_headline_ratio():
     compute_axis = seq["total_cycles"] / base["total_cycles"]
     memory_axis = seq["total_cycles_with_memory"] / base["total_cycles_with_memory"]
 
-    assert compute_axis == pytest.approx(8.0, rel=0.02)     # 평면 8장
-    assert memory_axis == pytest.approx(2.0, rel=0.02)      # 기준선도 읽어야 한다
-    assert memory_axis < compute_axis
+    # 연산축은 평면 수라 설정과 무관하게 8.0 이다
+    assert compute_axis == pytest.approx(8.0, rel=0.02)
+
+    # ★ 메모리축 값은 설정에 의존한다 (2026-08-29 정정)
+    #     word_tokens=32, n_ports=2   -> 2.00   기준선 메모리 17,220
+    #     word_tokens=1,  n_ports=32  -> 1.05   기준선 메모리 32,760
+    #   포트가 늘면 기준선의 읽기 시간도 함께 줄어 격차가 더 좁혀진다.
+    #   고정값 대신 "격차가 줄어든다" 는 성질을 못 박는다.
+    assert memory_axis < compute_axis / 2, (
+        f"memory_axis={memory_axis:.3f} — 축을 바꿔도 격차가 안 줄었다"
+    )
+    assert 1.0 <= memory_axis <= 2.5, f"memory_axis={memory_axis:.3f} 가 범위 밖이다"
 
 
 def test_the_baseline_memory_quota_is_dense_not_the_test_designs_reads():

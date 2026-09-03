@@ -90,7 +90,21 @@ def _strip_comment(line: str) -> str:
     return "".join(out).rstrip()
 
 
+class ConfigKeyError(KeyError):
+    """설정 경로가 없는데 조용히 기본값으로 넘어가려 할 때."""
+
+
 def _mini_yaml_load(text: str) -> dict:
+    # ★ 탭은 PyYAML 이 ScannerError 로 막는데 이 파서는 조용히 통과시켜
+    #   들여쓰기가 무시된 **다른 구조**를 만든다. 에러가 없어서 더 위험하다.
+    #   PyYAML 유무에 따라 결과가 갈리면 안 되므로 여기서도 막는다.
+    for i, raw in enumerate(text.splitlines(), 1):
+        stripped = raw.split("#", 1)[0]
+        if stripped[: len(stripped) - len(stripped.lstrip())].count("	"):
+            raise ValueError(
+                f"{i}행: 들여쓰기에 탭이 있다. YAML 은 공백만 허용한다 "
+                f"(PyYAML 은 에러를 내지만 이 파서는 조용히 다른 구조를 만든다)"
+            )
     lines = []
     for raw in text.splitlines():
         stripped = _strip_comment(raw)
@@ -176,19 +190,36 @@ class Config:
     def warmup_tokens(self) -> int:
         return int(self.model["decode"]["warmup_tokens"])
 
-    def get(self, dotted: str, default: Any = None) -> Any:
-        """'hardware.memory.word_tokens' 처럼 점 표기로 접근."""
+    def get(self, dotted: str, default: Any = None, *, required: bool = False) -> Any:
+        """'hardware.memory.word_tokens' 처럼 점 표기로 접근.
+
+        ★ 기본 동작은 '없으면 조용히 default' 다. 이게 실제 사고를 냈다 —
+          `quant.quant.n_planes`(존재하지 않는 경로)가 기본값 8 로 통과했는데
+          진짜 값도 8 이라 아무도 몰랐다.
+
+        `required=True` 를 주면 경로가 없을 때 ConfigKeyError 를 낸다.
+        **오타가 조용히 묻히면 안 되는 자리에는 이걸 쓸 것.**
+        """
         root, _, rest = dotted.partition(".")
         node: Any = getattr(self, root, None)
-        if node is None:
+        missing = node is None
+        if not missing:
+            for part in rest.split("."):
+                if not part:
+                    continue
+                if not isinstance(node, dict) or part not in node:
+                    missing = True
+                    break
+                node = node[part]
+        if missing:
+            if required:
+                raise ConfigKeyError(f"설정 경로 {dotted!r} 가 없다")
             return default
-        for part in rest.split("."):
-            if not part:
-                continue
-            if not isinstance(node, dict) or part not in node:
-                return default
-            node = node[part]
         return node
+
+    def require(self, dotted: str) -> Any:
+        """`get(dotted, required=True)` 의 짧은 이름."""
+        return self.get(dotted, required=True)
 
     # --- 재현성 --------------------------------------------------------
     def hash(self) -> str:
@@ -211,8 +242,11 @@ class Config:
             for k, v in node.items():
                 if isinstance(v, dict):
                     walk(v, f"{path}.{k}" if path else k)
-                elif k.startswith("source") and v == "estimate":
-                    warns.append(f"{path}.{k} = estimate")
+                elif k.startswith("source") and isinstance(v, str) and v.strip().lower().startswith("estimat"):
+                    # ★ 예전에는 v == "estimate" 정확 일치만 봤다. "Estimate" ·
+                    #   "estimated" · "estimate " 같은 오타가 전부 통과해
+                    #   **실측으로 교체된 것처럼 보였다.**
+                    warns.append(f"{path}.{k} = {v}")
 
         walk(self.hardware, "hardware")
         return warns
