@@ -19,10 +19,18 @@ from src.quantize import (
 
 
 def test_plane_weights_all_positive():
-    """★ 상한식 R_m = (2^(8-m)-1)·Q+ 성립의 전제 ★
+    """K unsigned 저장 규약 — 자리값이 전부 양수여야 한다.
 
-    K 를 unsigned 로 저장하므로 모든 자리값이 양수여야 한다.
-    2의 보수(signed)로 바꾸면 MSB 가 -128 이 되어 상한식이 깨진다.
+    이 성질 덕분에 R_m = (2^(8-m)-1)·Q+ 라는 **단일 공식**이 8개 평면 전부에
+    그대로 적용된다.
+
+    ★ 정정 (2026-08) ★
+    "2의 보수(signed)로 바꾸면 MSB 가 -128 이 되어 상한식이 깨진다"는 이전 서술은
+    틀렸다. MSB-first 이므로 부호 비트는 라운드 0에 확정되어 '결정된 부분합'에
+    들어가고, 미확정으로 남는 비트의 자리값은 전부 양수다. signed 에서도 유효한
+    bound 를 세울 수 있으며 PADE(HPCA 2026)/BitStopper 가 그렇게 유도한다.
+    unsigned 는 평면 0의 부호 특수처리를 없애는 **회로 단순화**이지 수학적 필연이
+    아니다.  -> related_work.md, src/quantize.py
     """
     w = plane_weights(8)
     assert np.all(w > 0), "a negative K weight invalidates the early-termination upper bound"

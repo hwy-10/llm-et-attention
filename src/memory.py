@@ -43,15 +43,50 @@ def _ceil_div(a: int, b: int, *, what: str = "나눌 폭") -> int:
 class BramSpec:
     """비트평면 BRAM 구성."""
 
+    # ★ 기본값은 일부러 config/hardware.yaml 과 다르게 둔다.
+    #   둘이 같으면 배선이 끊겨도 숫자가 안 변해 알 수 없다
+    #   (read_fields 의 ConfigDefaultWarning 이 그 대비책이다).
+    #   실제 값은 config 가 정한다. -> docs/architecture.md §4.1.1
     word_tokens: int = 32       # 한 워드에 담기는 토큰 수 (평면 1개 기준)
     # 워드 하나의 물리 폭. bits_read 를 만들 때만 쓴다.
     # 토큰 하나가 평면당 1비트이므로 word_bits >= word_tokens 여야 뜻이 선다.
     word_bits: int = 32
     n_ports: int = 2
     decision_latency_planes: int = 1
+    # ★ 판정 지연은 상수가 아니다 — ARCHITECTURE.md 6.2.1
+    #   "fixed" 는 위 상수를 그대로 쓴다 (기존 수치 재현용)
+    #   "auto"  는 스텝마다 토큰 수로부터 계산한다 (이쪽이 물리적으로 맞다)
+    decision_latency_mode: str = "fixed"
+    pipeline_cycles: int = 8    # 가산트리 6단 + 마스킹 1 + 비교기 1
 
     def n_words(self, n_tokens: int) -> int:
         return _ceil_div(n_tokens, self.word_tokens, what="word_tokens")
+
+    def latency_at(self, n_tokens: int, lanes: int) -> int:
+        """이 스텝에서 실제로 적용될 판정 지연(평면 수)."""
+        if self.decision_latency_mode != "auto":
+            return int(self.decision_latency_planes)
+        return latency_planes(n_tokens, lanes, self.pipeline_cycles)
+
+
+def latency_planes(n_tokens: int, lanes: int, pipeline_cycles: int = 8) -> int:
+    """판정 지연을 사이클에서 **평면 수**로 환산한다.
+
+        지연(평면) = ceil( pipeline_cycles / ceil(n_tokens / lanes) )
+
+    ★ 상수가 아니라 문맥 길이의 함수다. lanes=32, pipeline=8 기준
+
+        n_tokens =  32 -> 8 평면   (지연이 전 평면. 종단 이득이 0)
+        n_tokens = 128 -> 2 평면
+        n_tokens >= 256 -> 1 평면
+
+    고정값 1 은 n_tokens >= 256 에서만 맞다. 짧은 문맥에서 이 보정을 빼면
+    읽기 절감이 최대 2배 과대평가된다 (T=128 에서 20.9% -> 10.7%).
+    """
+    if lanes <= 0 or n_tokens <= 0 or pipeline_cycles <= 0:
+        return 0
+    return _ceil_div(pipeline_cycles, _ceil_div(n_tokens, lanes, what="lanes"),
+                     what="cycles_per_plane")
 
 
 def word_reads_scattered(live_row: np.ndarray, word_tokens: int) -> int:

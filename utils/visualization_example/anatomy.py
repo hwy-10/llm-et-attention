@@ -79,6 +79,16 @@ _FIELD_DESC: dict[tuple[str, str], str] = {
     ("BramSpec", "decision_latency_planes"): (
         "판정 지연. **apply() 는 쓰지 않는다** — `read_live` 를 만들 때 이미 반영되어 들어온다."
     ),
+    ("BramSpec", "decision_latency_mode"): (
+        "판정 지연을 상수로 볼지(`fixed`) 문맥 길이의 함수로 볼지(`auto`). "
+        "★ 실제로는 `ceil(pipeline_cycles / ceil(T/lanes))` 라 **상수가 아니다.** "
+        "고정값 1 은 `T >= 256` 에서만 맞고, T=128 에서는 절감을 2배 과대평가한다 "
+        "(20.9% -> 10.7%). 기존 수치 재현을 위해 기본값은 `fixed` 로 둔다."
+    ),
+    ("BramSpec", "pipeline_cycles"): (
+        "판정이 나오기까지의 사이클. 가산트리 6단 + 마스킹 1 + 비교기 1 = 8. "
+        "`decision_latency_mode=\"auto\"` 일 때만 쓴다. 합성 결과로 확정할 값이다."
+    ),
     # --- ScheduleResult (출력)
     ("ScheduleResult", "policy"): "적용한 정책 이름. 입력을 그대로 되돌려 준다.",
     ("ScheduleResult", "cycles"): "★ **연산 사이클.** 정책마다 세는 방식이 다르다.",

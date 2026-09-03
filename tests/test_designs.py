@@ -123,3 +123,50 @@ def test_decision_latency_reduces_savings():
                        bram=BramSpec(word_tokens=32, decision_latency_planes=lat))
         savings.append(r.reads.ideal_saving)
     assert savings[0] >= savings[1] >= savings[2], savings
+
+
+# ---------------------------------------------------------------------------
+# ★ 2026-08-28 돌연변이 시험에서 드러난 구멍을 메운다 (팀 2 신규 배정)
+# ---------------------------------------------------------------------------
+def test_exact_design_ignores_margin_entirely():
+    """★ 정확 모드는 margin 을 받아도 무시해야 한다.
+
+    `eff_margin = margin if design == "approx" else 0.0` 을
+    `eff_margin = margin` 으로 바꿔도 기존 테스트가 **하나도 안 잡았다.**
+    전부 margin=0.0 으로만 불렀기 때문이다.
+
+    이 불변식이 깨지면 '정확 모드는 무손실'이라는 주장이 무너진다.
+    """
+    p, b, exact = _case(0)
+    ref = run_design("exact", p, b, top_k=8, margin=0.0, sched=SCHED, bram=BRAM)
+    for margin in (0.3, 1.0, 5.0):
+        r = run_design("exact", p, b, top_k=8, margin=margin, sched=SCHED, bram=BRAM)
+        np.testing.assert_array_equal(r.alive, ref.alive)
+        np.testing.assert_array_equal(r.term_plane, ref.term_plane)
+        # 참 top-8 이 여전히 전부 살아 있어야 한다
+        true_top = set(topk_indices(exact.astype(np.float64), 8).tolist())
+        assert true_top <= set(np.flatnonzero(r.alive).tolist()), margin
+
+
+def test_seq_design_ignores_margin_too():
+    """설계 ② 도 종단이 없으므로 margin 과 무관해야 한다."""
+    p, b, _ = _case(1)
+    ref = run_design("seq", p, b, top_k=8, margin=0.0, sched=SCHED, bram=BRAM)
+    r = run_design("seq", p, b, top_k=8, margin=2.0, sched=SCHED, bram=BRAM)
+    np.testing.assert_array_equal(r.scores_raw, ref.scores_raw)
+    assert r.alive.all() and ref.alive.all()
+
+
+def test_design_output_masks_terminated_tokens():
+    """★ `scores` 는 마스킹된 값이어야 한다 (`scores_raw` 와 달라야 한다).
+
+    `masked_scores(sr)` 를 `sr.s_int` 로 바꿔도 기존 테스트가 안 잡았다.
+    종단 토큰의 동결값이 그대로 새어 나가면 다운스트림 softmax 가
+    있지도 않은 질량을 만든다.
+    """
+    p, b, _ = _case(3)
+    r = run_design("exact", p, b, top_k=4, sched=SCHED, bram=BRAM)
+    assert not r.alive.all(), "이 케이스는 종단이 일어나야 의미가 있다"
+    assert np.isneginf(r.scores[~r.alive]).all(), "종단 토큰은 -inf 여야 한다"
+    assert np.all(np.isfinite(r.scores_raw)), "scores_raw 는 마스킹 전 값이다"
+    np.testing.assert_array_equal(r.scores[r.alive], r.scores_raw[r.alive])

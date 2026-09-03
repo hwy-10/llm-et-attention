@@ -12,8 +12,16 @@
       부호 비트는 라운드 0에 확정되어 항상 '결정된 부분합'에 들어가고, 미확정으로
       남는 비트의 자리값은 전부 양수다. 따라서 signed 에서도 유효한 bound 를 세울 수
       있고, PADE(HPCA 2026)/BitStopper 가 2의 보수에서 그렇게 유도한다.
-      unsigned 는 평면 0의 부호 특수처리와 양방향 구간 로직을 없애는 회로 단순화이지
-      수학적 필연이 아니다.  자세한 것은 docs/related_work.md 참조.
+      ★ 단, 정정 문구가 빠뜨린 조건이 있다 (2026-08-28 직접 유도해 확인) ★
+        m = 0 (아무 평면도 안 읽은 시점) 에서는 signed 가 **다른 공식**을 쓴다.
+              R_0 = -128*Q- + 127*Q+       (unsigned 는 255*Q+)
+              unsigned 공식을 그대로 쓰면 Q+ < |Q-| 인 q 에서 상한을 밑돌아 깨진다.
+              반례: q = [1]x10 + [-100]x54  ->  참 최대 692,470 vs 255*Q+ = 2,550
+        m >= 1 에서는 남은 자리값이 [64,32,...,1] 로 전부 양수라 같은 형태가 된다.
+
+      즉 unsigned 의 이득은 **평면 0의 예외 처리를 없애 8개 평면에 단일 공식을
+      쓰는 것**이다. 회로 단순화이지 수학적 필연이 아니라는 결론은 그대로다.
+      자세한 것은 docs/related_work.md 참조.
 
   q : 대칭 signed 8비트.  q ∈ [−127, 127]
 
@@ -133,6 +141,8 @@ def to_bitplanes(stored: np.ndarray, n_planes: int = N_PLANES) -> np.ndarray:
         raise ValueError(f"stored must be an integer array, got dtype {u.dtype}")
 
     # 담기지 않는 값은 조용히 잘린다 (256 -> 0, -1 -> 255).
+    # ★ 그러면 비트평면이 K 를 대표하지 못하고 5.4절 상한식이 깨진다
+    #   (반례 탐색에서 위반 4~9건 확인). -> src/bounds.py 독스트링
     # 왕복이 무손실인 구간은 0 .. 2^n_planes-1 뿐이므로 벗어나면 막는다.
     lo, hi = int(u.min()) if u.size else 0, int(u.max()) if u.size else 0
     limit = (1 << n_planes) - 1

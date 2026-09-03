@@ -61,6 +61,8 @@ def _real_spec() -> dict[str, Any]:
             "n_ports": bram.n_ports,
             "batch_size": spec.batch_size,
             "decision_latency_planes": bram.decision_latency_planes,
+            "decision_latency_mode": bram.decision_latency_mode,
+            "pipeline_cycles": bram.pipeline_cycles,
             "n_planes": int(cfg.get("quant.planes.n_planes", 8) or 8),
             "head_dim": int(cfg.get("model.model.head_dim", 64) or 64),
             "source": "config/hardware.yaml",
@@ -74,6 +76,8 @@ def _real_spec() -> dict[str, Any]:
             "lanes": s.lanes, "word_tokens": b.word_tokens, "word_bits": b.word_bits,
             "n_ports": b.n_ports, "batch_size": s.batch_size,
             "decision_latency_planes": b.decision_latency_planes,
+            "decision_latency_mode": b.decision_latency_mode,
+            "pipeline_cycles": b.pipeline_cycles,
             "n_planes": 8, "head_dim": 64,
             "source": "dataclass 기본값 (config 를 읽지 못함)",
         }

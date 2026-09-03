@@ -47,3 +47,6 @@ desktop.ini
 #   rtl_data/mock/*       RTL 없이 파이프라인을 돌리는 더미 데이터
 #   rtl_data/*.rpt,*.csv  RTL 팀 실측 (들어오면 최상위에 놓는다)
 # ---------------------------------------------------------------------------
+wikitext2_test.txt
+sweep_out.txt
+ppl_out.txt

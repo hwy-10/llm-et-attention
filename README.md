@@ -4,6 +4,19 @@
 [![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![python](https://img.shields.io/badge/python-3.10%2B-blue.svg)](pyproject.toml)
 
+> ## 📖 **읽을 문서는 [`GUIDE.md`](GUIDE.md) 하나입니다.**
+>
+> 배경지식 → 원리 → 아키텍처 → 코드별 역할 → 팀 분업 → 최종 결과물을
+> **개발 흐름대로** 한 파일에 담았습니다.
+>
+> 나머지는 **읽는 게 아니라 찾아보는 것**입니다.
+>
+> | 언제 펴나 | 문서 |
+> |---|---|
+> | RTL 짤 때 | [`docs/ko/architecture_ko.md`](docs/ko/architecture_ko.md) |
+> | 실험 돌릴 때 | [`docs/ko/running_experiments_ko.md`](docs/ko/running_experiments_ko.md) |
+> | 논문 쓸 때 | [`docs/related_work.md`](docs/related_work.md) |
+
 **최종 산출물은 FPGA 에 올릴 RTL 이다.**  
 상위 비트 우선(MSB-first) 비트평면 계산 + 조기 종단(early termination)을 하드웨어로 구현하고, **이 기법이 실제로 이득이 되는
 조건의 경계**를 RTL 실측까지 포함해 정량화한다.
@@ -60,8 +73,9 @@ pip install PyYAML pandas pytest       # 선택 (없어도 내장 대체 구현�
 ```
 
 ```bash
-python tests/run_tests.py              # 55개 테스트 — 먼저 이걸 통과시킬 것
-python run_paper_experiments.py        # 전체 실험 + 그림 + 표  (약 1분)
+python tests/run_tests.py              # 424개 테스트 — 먼저 이걸 통과시킬 것
+python run_paper_experiments.py        # 전체 실험 + 그림 + 표
+                                       #   T=2048 실제 텐서면 40분+ (exp4 가 절반)
 ```
 
 ```
@@ -95,6 +109,15 @@ python -m experiments.exp2_margin_sweep              # 실험 단독 실행
 | **exp4** 스케줄 정책 | 종단 불규칙성 처리 + **BRAM 워드폭 함정** | 6.3-(2), 5.7 |
 | **exp5** N × k 스캔 | 문맥 길이와 상위 k 에 따라 결론이 어떻게 바뀌는가 | 6.3-(4) |
 | **exp6** 손익분기 | 자원·Fmax 저하를 감안하고도 이득이 남는가 | 6.3-(4), 7.3 |
+| **exp7** 병목 위치 | 메모리 절감이 **시간으로 환산되는가** — 포트 수가 정한다 | 팀2 신설 |
+| **exp8** 실측 perplexity | 보간이 아니라 종단 로직을 어텐션에 직접 넣어 잰다 | 팀2 신설 |
+| **exp9** margin 커버리지 | 전 층·헤드·텍스트에서 무손실인 margin 은 얼마인가 | 팀2 신설 |
+
+> **exp6 과 exp7 은 같은 질문을 다른 축에서 본다.** exp6 은 `total_cycles`(연산축)만
+> 세므로 기준 설계 대비로는 절대 안 이긴다 — 비트평면 순차가 그 축에서 구조적으로 8배
+> 불리하기 때문이다. exp7 은 메모리를 포함해 같은 잣대로 재고, 거기서 `T=2048` 이면 이긴다.
+>
+> **exp8 과 exp9 는 torch + transformers + 모델 가중치가 필요하다.** 없으면 건너뛴다.
 
 **exp1 을 가장 먼저 돌린다.** 종단이 거의 일어나지 않으면 이후 RTL 구현이
 전부 무의미하므로, 그 시점에 설계를 재검토해야 한다.
@@ -146,8 +169,11 @@ exp1 은 정확 모드의 무손실성도 함께 자동 점검한다.
 
 ### 정직하게 짚어야 할 것
 
-* 비트평면 순차 처리는 8사이클을 쓰므로 **기준 설계(①)보다 사이클이 8배 많다.**
+* 비트평면 순차 처리는 8사이클을 쓰므로 **기준 설계(①)보다 연산 사이클이 8배 많다.**
   (512 토큰 기준 4,305 → 34,440 사이클)
+* ★ **다만 연산만 센 값이다.** ① 도 K 를 전부 읽어야 하므로 ① 자신이 메모리
+  병목이다. BRAM 읽기를 포함해 재면 현 설정에서 격차는 **1.05배**다
+  (① 32,760 vs ② 34,440). → `docs/architecture.md` 7절
 * 제안의 근거는 사이클이 아니라 **(a) DSP 미사용 (b) 메모리 읽기 감소** 다.
 * 추정 Fmax 기준 exp6 의 실효 speedup 은 ② 대비 0.93 으로 손익분기 미달이다.
   Vivado 실측으로 교체하기 전까지 이 결론은 잠정적이다.
@@ -204,7 +230,7 @@ mock 은 소프트웨어 모델에서 생성한 것이라 항상 통과하며, �
 | `model.yaml` | 모델 스펙, 디코드 루프 길이(`seq_len`, `warmup_tokens`), 합성 데이터 |
 | `quant.yaml` | ★ 양자화 규약 — 상한식 성립의 전제이므로 함부로 바꾸지 말 것 |
 | `hardware.yaml` | ★ RTL 팀 인터페이스 — 워드폭, 판정 지연, 자원, Fmax |
-| `sweeps.yaml` | exp1~exp6 의 스윕 범위 |
+| `sweeps.yaml` | exp1~exp9 의 스윕 범위 |
 
 `source: estimate` 인 항목은 실행 시마다 경고로 표시된다.
 전부 실측으로 교체되어 경고가 사라지면 논문에 쓸 준비가 된 것이다.

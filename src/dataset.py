@@ -81,10 +81,12 @@ def synthetic_qk(
     k = rng.normal(0.0, k_std, size=(seq_len, head_dim))
 
     n_sink = max(1, int(round(sink_frac * seq_len)))
-    # 토큰 0 은 항상 sink (실제 LLM 관측과 일치)
-    sink_idx = np.unique(
-        np.concatenate([[0], rng.choice(seq_len, size=n_sink, replace=False)])
-    )
+    # 토큰 0 은 항상 sink (실제 LLM 관측과 일치).
+    # ★ 예전에는 rng.choice(seq_len, ...) 결과에 0 을 붙이고 unique 로 합쳤는데,
+    #   choice 가 0 을 뽑으면 개수가 하나 줄어 **시드마다 sink 수가 달라졌다**
+    #   (200시드 중 10회에서 21개가 아니라 20개). 0 을 빼고 뽑아 고정한다.
+    rest = rng.choice(np.arange(1, seq_len), size=min(n_sink, seq_len - 1), replace=False)
+    sink_idx = np.concatenate([[0], np.sort(rest)])
 
     q_dir = q.mean(axis=0)
     nrm = np.linalg.norm(q_dir)
@@ -139,8 +141,11 @@ def snapshot_from_config(cfg, seed: int = 0, seq_len: int | None = None) -> QKSn
                 q=snap.q[:seq_len], k=snap.k[:seq_len],
                 source=snap.source, meta={"cache": str(cache)},
             )
-    # 캐시가 요청 길이보다 짧아도 다른 길이용 캐시가 있을 수 있다
-    for other in sorted((cache.parent).glob("*.npz")) if cache.parent.exists() else []:
+    # 캐시가 요청 길이보다 짧아도 **같은 층·헤드의** 다른 길이용 캐시가 있을 수 있다.
+    # ★ 예전에는 head_dim 만 보고 아무 npz 나 집어 왔다. 층·헤드가 달라도 통과해
+    #   **다른 층의 텐서로 실험이 도는** 사고가 가능했다. 파일명 접두사로 막는다.
+    stem = cache.stem.rsplit("_T", 1)[0]          # "<name>_L<layer>_H<head>"
+    for other in sorted(cache.parent.glob(f"{stem}_T*.npz")) if cache.parent.exists() else []:
         snap = QKSnapshot.load(other)
         if snap.n_tokens >= seq_len and snap.head_dim == head_dim:
             return QKSnapshot(
